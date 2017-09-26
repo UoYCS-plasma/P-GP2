@@ -140,11 +140,11 @@ configure:3963: checking lex output file root
 configure:3977: result: lex.yy
 configure:3982: checking lex library
 configure:3996: gcc -o conftest -g -O2   conftest.c   >&5
-/tmp/ccqwGIS1.o: In function `input':
+/tmp/ccZWz77K.o: In function `input':
 /home/atkrye/Documents/PGP-2/lex.yy.c:1185: undefined reference to `yywrap'
-/tmp/ccqwGIS1.o: In function `yylex':
+/tmp/ccZWz77K.o: In function `yylex':
 /home/atkrye/Documents/PGP-2/lex.yy.c:879: undefined reference to `yywrap'
-/tmp/ccqwGIS1.o: In function `main':
+/tmp/ccZWz77K.o: In function `main':
 /home/atkrye/Documents/PGP-2/conftest.l:18: undefined reference to `yywrap'
 collect2: error: ld returned 1 exit status
 configure:3996: $? = 1

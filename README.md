@@ -77,4 +77,3 @@ See the file [COPYING](COPYING).
 The GP 2 language was designed by Detlef Plump.
 
 The GP 2 compiler and runtime library was developed by Christopher Bak.
-# PGP2
