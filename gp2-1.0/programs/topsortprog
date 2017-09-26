@@ -1,0 +1,85 @@
+// Input: a connected acyclic host graph G. 
+// Output: A topological sorting of the graph G. That is, an integer-labelling
+//         of G's nodes such that a node with label i does not have an outgoing
+//         edge to a node with a label j < i, and all integer labels are distinct.
+//
+// The program uses a red integer-labelled root node to act as the global counter 
+// for the numbering of the topological order. The topological sorting is computed
+// as follows:
+// (1) Create the red root node with label 1.
+// (2) Shade each unmarked node grey and label it with its indegree.
+// (3) Assign the first numbers of the ordering to all grey nodes with indegree 0.
+//     The numbers are taken from the root node, whose label is incremented after
+//     each assignment.
+// (4) Systematically "hide" edges (by dashing them) from grey nodes to unmarked 
+//     nodes. When a grey node has exactly 1 incoming unmarked edge (known from its
+//     label), assign it the next number in the ordering. This prevents a grey node
+//     from being assigned a number before another grey node that "points to it" via 
+//     an edge.
+// (5) When all nodes have been assigned, clean up the junk.
+//
+// You might be wondering the nodes are labelled with their indegree when the "indeg"
+// operator exists. The indegree we consider here is the indegree of non-dashed edges.
+// This cannot be captured by an operator, so we use the node label instead. Node 
+// labels are initialised with their indegrees, using the "indeg" operator. Once an
+// edge is dashed, its target label is decremented. The reason we dash edges instead
+// of deleting them is because we want to preserve the original graph up to node
+// relabelling.
+
+Main = Start; Sort!; unmark_edge!; remove_root
+Start = add_indeg!; make_root; number_source!
+Sort = {number, hide_edge}
+
+make_root()
+[ | ]
+=>
+[ (n0(R), 1 # red) | ]
+interface = { }
+
+add_indeg(x:list)
+[ (n0, x) | ]
+=>
+[ (n0, indeg(n0):x # grey) | ]
+interface = {n0}
+
+// Labels an indegree 0 node with the number from the root node and connects the nodes.
+number_source(x:list; i:int)
+[ (n0(R), i # red) (n1, 0:x # grey) | ]
+=>
+[ (n0(R), i+1 # red) (n1, i:x) | ]
+interface = {n0, n1}
+
+// Assigns the next number in the ordering to a node labelled 1.
+number(a,x,y:list; i:int)
+[ (n0(R), i # red) (n1, x) (n2, 1:y # grey) |
+  (e1, n1, n2, a) ]
+=>
+[ (n0(R), i+1 # red) (n1, x) (n2, i:y) |
+  (e1, n1, n2, a) ]
+interface = {n0, n1, n2}
+
+// Dashes an edge and decrements the label of its target.
+hide_edge(a,x,y:list; d:int)
+[ (n0, x) (n1, d:y # grey) |
+  (e1, n0, n1, a) ]
+=>
+[ (n0, x) (n1, d-1:y # grey) |
+  (e1, n0, n1, a # dashed) ]
+interface = {n0, n1}
+where d > 1
+
+unmark_edge(a,x,y:list)
+[ (n0, x) (n1, y) |
+  (e0, n0, n1, a # dashed) ]
+=>
+[ (n0, x) (n1, y) |
+  (e0, n0, n1, a) ]
+interface = {n0, n1}
+
+remove_root(i:int)
+[ (n0(R), i # red) | ]
+=>
+[ | ]
+interface = { }
+
+
