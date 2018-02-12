@@ -1,0 +1,94 @@
+Main = (pickEdge; [deleteEdge, keepEdge])!; unmarkEdge!
+
+pickEdge
+(
+	a, b, c : list
+)
+[
+	(n0, a)
+	(n1, b)
+	|
+	(e0, n0, n1, c)
+	(e1, n1, n0, c)
+]
+=>
+[
+	(n0, a)
+	(n1, b)
+	|
+	(e0, n0, n1, c#red)
+	(e1, n1, n0, c#red)
+]
+interface = {
+	n0, n1
+}
+
+deleteEdge
+(
+	a, b, c : list
+)
+[0.7]
+[
+	(n0, a)
+	(n1, b)
+	|
+	(e0, n0, n1, c#red)
+	(e1, n1, n0, c#red)
+]
+=>
+[
+	(n0, a)
+	(n1, b)
+	|
+]
+interface = {
+	n0, n1
+}
+
+keepEdge
+(
+	a, b, c : list
+)
+[0.3]
+[
+	(n0, a)
+	(n1, b)
+	|
+	(e0, n0, n1, c#red)
+	(e1, n1, n0, c#red)
+]
+=>
+[
+	(n0, a)
+	(n1, b)
+	|
+	(e0, n0, n1, c#blue)
+	(e1, n1, n0, c#blue)
+]
+interface = {
+	n0, n1
+}
+
+unmarkEdge
+(
+	a, b, c : list
+)
+[0.7]
+[
+	(n0, a)
+	(n1, b)
+	|
+	(e0, n0, n1, c#blue)
+	(e1, n1, n0, c#blue)
+]
+=>
+[
+	(n0, a)
+	(n1, b)
+	|
+	(e0, n0, n1, c)
+	(e1, n1, n0, c)
+]
+interface = {
+	n0, n1
+}
