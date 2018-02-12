@@ -332,17 +332,17 @@ IDList: RuleID				{ $$ = addASTRule(@1, $1, NULL);
 
 
  /* Grammar for rules. */
-RuleDecl: RuleID '(' VarDecls ')' '[' DNUM ']' Graph ARROW Graph Inter CondDecl
-              { $$ = newASTWeightedRule(@1, $1, $3, $8, $10, $11, $12, $6);
-                if($1) free($1); }
-    | RuleID '(' ')' '[' DNUM ']' Graph ARROW Graph Inter CondDecl
-        { $$ = newASTWeightedRule(@1, $1, NULL, $7, $9, $10, $11, $5);
-    if($1) free($1); }
-    | RuleID '(' VarDecls ')' Graph ARROW Graph Inter CondDecl
+RuleDecl: RuleID '(' VarDecls ')' Graph ARROW Graph Inter CondDecl
 					{ $$ = newASTRule(@1, $1, $3, $5, $7, $8, $9);
 					  if($1) free($1); }
-    | RuleID '(' ')' Graph ARROW Graph Inter CondDecl
+        | RuleID '(' ')' Graph ARROW Graph Inter CondDecl
       					{ $$ = newASTRule(@1, $1, NULL, $4, $6, $7, $8);
+					  if($1) free($1); }
+        | RuleID '(' VarDecls ')' '[' DNUM ']' Graph ARROW Graph Inter CondDecl
+            					{ $$ = newASTWeightedRule(@1, $1, $3, $8, $10, $11, $12, $6);
+            					  if($1) free($1); }
+        | RuleID '(' ')' '[' DNUM ']' Graph ARROW Graph Inter CondDecl
+      					{ $$ = newASTWeightedRule(@1, $1, NULL, $7, $9, $10, $11, $5);
 					  if($1) free($1); }
         /* Error-catching productions */
 	| ProcID '(' VarDecls ')' Graph ARROW Graph Inter CondDecl
