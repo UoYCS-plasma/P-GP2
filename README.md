@@ -21,13 +21,15 @@ If GP 2 is installed in a non-standard directory, use the -L option to ensure th
 
 Options:
 
--C - Enable graph copying.
+-c - Enable graph copying.
 
--D - Compile program with GCC debugging flags.
+-d - Compile program with GCC debugging flags.
 
--L - Specify root directory of installed files.
+-l - Specify root directory of installed files.
 
--O - Specify directory for generated code and program output.
+-o - Specify directory for generated code and program output.
+
+-o - Specify a program name. If this argument is supplied, all variable names will be prefixed with the given name and, instead of a executable program, a library will be generated where a apply_[program name] function can be used to apply the program to a GP 2 host graph. Helpful for intergrating a program with other c code.
 
 The compiler can also be used to validate GP 2 source files.
 
@@ -38,30 +40,45 @@ Run gp2 -r <rule_file> to validate a rule.
 Run gp2 -h <host_file> to validate a host graph.
 
 
+Build
+
+Build a GP 2 distribution as follows:
+
+1. (First build only) run *autoreconf -i*.
+
+2. Run *autoconf -i*.
+
+3. Run *automake -a*.
+
+4. Run *./configure*.
+
+5. Run *make dist*.
+
+This will generate a distribution zip (default name: gp2-1.0.tar.gz) which will contain a GP 2 distribution ready to install.
+
 Installation
 
-Superusers install GP 2 as follows:
+Superusers install a GP 2 disribution as follows:
 
-1.  Run ./configure from the top-level directory to generate config.h and Makefile.
+1.  Run *./configure* from the distribution's top-level directory to generate config.h and Makefile.
 
-2.  Run make.
+2.  Run *make*.
 
-3.  Run sudo make install.
+3.  Run *sudo make install*.
 
 This command will install files into the following directories: * /usr/local/bin * /usr/local/lib * /usr/local/include
 
 If you are not a superuser, install GP 2 locally as follows:
 
-1.  Run `./configure --prefix={dest-dir}' from the top-level directory.
+1.  Run *./configure --prefix={dest-dir}* from the distribution's top-level directory.
 
-2.  Run make.
+2.  Run *make*.
 
-3.  Run make install.
+3.  Run *make install*.
 
 This command will install files into the following directories: * {dest-dir}/bin * {dest-dir}/lib * {dest-dir}/include
 
 Call the compiler with -l {dest-dir} to ensure that the generated code compiles.
-
 
 Authors
 
