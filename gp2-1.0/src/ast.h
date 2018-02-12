@@ -236,6 +236,7 @@ typedef struct GPAtom {
   YYLTYPE location;
   union {
     int number; 	 	  /* INTEGER_CONSTANT */
+    double dnum; /* DOUBLE_CONSTANT */
     string string;		  /* STRING_CONSTANT */
     struct {
        string name;
@@ -292,11 +293,16 @@ typedef struct GPRule {
    int predicate_count;
    bool empty_lhs;
    bool is_predicate;
+   double weight;
 } GPRule;
 
 GPRule *newASTRule(YYLTYPE location, string name, List *variables,
                    struct GPGraph *lhs, struct GPGraph *rhs, List *interface,
                    GPCondition *condition);
+
+GPRule *newASTWeightedRule(YYLTYPE location, string name, List *variables,
+                  struct GPGraph *lhs, struct GPGraph *rhs, List *interface,
+                  GPCondition *condition, double weight);
 
 typedef struct GPGraph {
    int id;

@@ -50,12 +50,17 @@ static HostList *appendHostAtom(HostList *list, HostAtom atom, bool free_strings
       print_to_log("Error (appendAtom): malloc failure.\n");
       exit(1);
    }
-   new_item->atom = atom;
+   HostAtom new_atom = { .type = atom.type };
+   new_item->atom = new_atom;
+
    if(atom.type == 's')
    {
-      if(free_strings) new_item->atom.str = atom.str;
-      else new_item->atom.str = strdup(atom.str);
+      new_item->atom.str = strdup(atom.str);
    }
+   else if(atom.type=='i'){
+     new_item->atom.num = atom.num;
+   }
+
    new_item->next = NULL;
 
    if(list == NULL)
@@ -315,6 +320,17 @@ void printHostLabel(HostLabel label, FILE *file)
    if(label.mark == DASHED) fprintf(file, " # dashed");
 }
 
+void printfHostLabel(HostLabel label)
+{
+   if(label.length == 0) printf("empty");
+   else printfHostList(label.list->first);
+   if(label.mark == RED) printf(" # red");
+   if(label.mark == GREEN) printf(" # green");
+   if(label.mark == BLUE) printf(" # blue");
+   if(label.mark == GREY) printf(" # grey");
+   if(label.mark == DASHED) printf(" # dashed");
+}
+
 void printHostList(HostListItem *item, FILE *file)
 {
    while(item != NULL)
@@ -322,6 +338,17 @@ void printHostList(HostListItem *item, FILE *file)
       if(item->atom.type == 'i') fprintf(file, "%d", item->atom.num);
       else fprintf(file, "\"%s\"", item->atom.str);
       if(item->next != NULL) fprintf(file, " : ");
+      item = item->next;
+   }
+}
+
+void printfHostList(HostListItem *item)
+{
+   while(item != NULL)
+   {
+      if(item->atom.type == 'i') printf("%d", item->atom.num);
+      else printf("\"%s\"", item->atom.str);
+      if(item->next != NULL) printf(" : ");
       item = item->next;
    }
 }

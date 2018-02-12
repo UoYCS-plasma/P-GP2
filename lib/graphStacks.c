@@ -1,13 +1,13 @@
 /* Copyright 2015-2017 Christopher Bak
 
-  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software: 
+  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software:
   you can redistribute it and/or modify it under the terms of the GNU General
   Public License as published by the Free Software Foundation, either version 3
   of the License, or (at your option) any later version.
 
-  The GP 2 Compiler is distributed in the hope that it will be useful, but 
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+  The GP 2 Compiler is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
   more details.
 
   You should have received a copy of the GNU General Public License
@@ -34,7 +34,7 @@ static void makeGraphChangeStack(int initial_capacity)
    }
    stack->size = 0;
    stack->capacity = initial_capacity;
-   stack->stack = calloc(initial_capacity, sizeof(GraphChange)); 
+   stack->stack = calloc(initial_capacity, sizeof(GraphChange));
    if(stack->stack == NULL)
    {
       print_to_log("Error (makeGraphChangeStack): malloc failure.\n");
@@ -47,7 +47,7 @@ static void growGraphChangeStack(void)
 {
    graph_change_stack->capacity *= 2;
    graph_change_stack->stack = realloc(graph_change_stack->stack,
-                                       graph_change_stack->capacity * sizeof(GraphChange)); 
+                                       graph_change_stack->capacity * sizeof(GraphChange));
    if(graph_change_stack->stack == NULL)
    {
       print_to_log("Error (growGraphChangeStack): malloc failure.\n");
@@ -83,7 +83,7 @@ void pushAddedNode(int index, bool hole_filled)
    change.added_node.hole_filled = hole_filled;
    pushGraphChange(change);
 }
-   
+
 void pushAddedEdge(int index, bool hole_filled)
 {
    GraphChange change;
@@ -183,11 +183,11 @@ void pushRemarkedEdge(int index, MarkType old_mark)
 void pushChangedRootNode(int index)
 {
    GraphChange change;
-   change.type = CHANGED_ROOT_NODE; 
+   change.type = CHANGED_ROOT_NODE;
    change.changed_root_index = index;
    pushGraphChange(change);
 }
-  
+
 /* The reversal of addition and removal of graph items is done manually as opposed
  * to calling the appropriate graph modification functions. This is because, due to
  * the management of holes in the graph's arrays, calling the normal functions is
@@ -198,21 +198,21 @@ void undoChanges(Graph *graph, int restore_point)
    if(graph_change_stack == NULL) return;
    assert(restore_point >= 0);
    while(graph_change_stack->size > restore_point)
-   { 
+   {
       GraphChange change = pullGraphChange();
       switch(change.type)
       {
          case ADDED_NODE:
          {
               int index = change.added_node.index;
-              Node *node = getNode(graph, index);  
+              Node *node = getNode(graph, index);
 
               if(node->out_edges.items != NULL) free(node->out_edges.items);
-              if(node->in_edges.items != NULL) free(node->in_edges.items); 
+              if(node->in_edges.items != NULL) free(node->in_edges.items);
               if(node->root) removeRootNode(graph, index);
               removeHostList(node->label.list);
 
-              if(change.added_node.hole_filled) 
+              if(change.added_node.hole_filled)
                  graph->nodes.holes.items[graph->nodes.holes.size++] = index;
               else graph->nodes.size--;
 
@@ -284,7 +284,7 @@ void undoChanges(Graph *graph, int restore_point)
               edge.source = change.removed_edge.source;
               edge.target = change.removed_edge.target;
 	      edge.matched = false;
- 
+
               graph->edges.items[change.removed_edge.index] = edge;
 
               Node *source = getNode(graph, change.removed_edge.source);
@@ -330,14 +330,14 @@ void undoChanges(Graph *graph, int restore_point)
          case CHANGED_ROOT_NODE:
               changeRoot(graph, change.changed_root_index);
               break;
-              
-         default: 
+
+         default:
               print_to_log("Error (restoreGraph): Unexepected change type %d.\n",
-                           change.type); 
+                           change.type);
               break;
       }
-   } 
-} 
+   }
+}
 
 static void freeGraphChange(GraphChange change)
 {
@@ -346,6 +346,8 @@ static void freeGraphChange(GraphChange change)
       case ADDED_NODE:
       case ADDED_EDGE:
       case CHANGED_ROOT_NODE:
+      case REMARKED_NODE:
+      case REMARKED_EDGE:
            break;
 
       case REMOVED_NODE:
@@ -356,30 +358,30 @@ static void freeGraphChange(GraphChange change)
            removeHostList(change.removed_edge.label.list);
            break;
 
-      case RELABELLED_NODE: 
+      case RELABELLED_NODE:
            removeHostList(change.relabelled_node.old_label.list);
            break;
 
-      case RELABELLED_EDGE: 
+      case RELABELLED_EDGE:
            removeHostList(change.relabelled_edge.old_label.list);
            break;
 
-      default: 
+      default:
            print_to_log("Error (freeGraphChange): Unexepected graph change "
-                        "type %d.\n",change.type); 
-           break;      
-   }  
-} 
+                        "type %d.\n",change.type);
+           break;
+   }
+}
 
 void discardChanges(int restore_point)
 {
    if(graph_change_stack == NULL) return;
-   while(graph_change_stack->size > restore_point) 
+   while(graph_change_stack->size > restore_point)
    {
       GraphChange change = pullGraphChange();
       freeGraphChange(change);
    }
-} 
+}
 
 void freeGraphChangeStack(void)
 {
@@ -397,7 +399,7 @@ int graph_stack_index = 0;
 int graph_copy_count = 0;
 
 void copyGraph(Graph *graph)
-{ 
+{
    printf("Copying host graph.\n");
    if(graph_stack_index == GRAPH_STACK_SIZE)
    {
@@ -410,7 +412,7 @@ void copyGraph(Graph *graph)
       print_to_log("Error (copyGraph): malloc failure.\n");
       exit(1);
    }
-   Graph *graph_copy = newGraph(graph->nodes.capacity, graph->edges.capacity); 
+   Graph *graph_copy = newGraph(graph->nodes.capacity, graph->edges.capacity);
 
    graph_copy->nodes.size = graph->nodes.size;
    graph_copy->nodes.capacity = graph->nodes.capacity;
@@ -451,11 +453,11 @@ void copyGraph(Graph *graph)
    graph_copy->edges.holes.capacity = graph->edges.holes.capacity;
    memcpy(graph_copy->edges.holes.items, graph->edges.holes.items,
           graph->edges.holes.capacity * sizeof(int));
-   
+
    graph_copy->number_of_nodes = graph->number_of_nodes;
    graph_copy->number_of_edges = graph->number_of_edges;
    graph_copy->root_nodes = NULL;
- 
+
    int index;
    for(index = 0; index < graph_copy->nodes.size; index++)
    {
@@ -524,7 +526,7 @@ Graph *revertGraph(Graph *current_graph, int restore_point)
 
    Graph *graph = NULL;
    while(graph_stack_index > restore_point)
-   { 
+   {
       graph = graph_stack[--graph_stack_index];
       /* Free graphs between the passed restore point and the top stack entry. */
       if(graph_stack_index > restore_point) freeGraph(graph);
@@ -544,4 +546,3 @@ void freeGraphStack(void)
    discardGraphs(0);
    free(graph_stack);
 }
-

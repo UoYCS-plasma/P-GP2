@@ -2,14 +2,14 @@
 
   Copyright 2015-2017 Christopher Bak
 
-  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software: 
+  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software:
   you can redistribute it and/or modify it under the terms of the GNU General
   Public License as published by the Free Software Foundation, either version 3
   of the License, or (at your option) any later version.
 
-  The GP 2 Compiler is distributed in the hope that it will be useful, but 
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+  The GP 2 Compiler is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
   more details.
 
   You should have received a copy of the GNU General Public License
@@ -18,7 +18,7 @@
   ============
   Graph Module
   ============
-                             
+
   An API for GP2 graphs. Defines structures for graphs, nodes, edges, label
   class tables and functions that operate on these structures.
 
@@ -32,11 +32,11 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <stdlib.h> 
-#include <stdio.h> 
+#include <stdlib.h>
+#include <stdio.h>
 
 /* There are 7 marks, but the 'any' mark does not occur in host graphs. */
-#define NUMBER_OF_MARKS 6 
+#define NUMBER_OF_MARKS 6
 #define NUMBER_OF_CLASSES 7
 
 typedef struct IntArray {
@@ -66,21 +66,21 @@ typedef struct EdgeArray {
 /* ================================
  * Graph Data Structure + Functions
  * ================================ */
-typedef struct Graph 
+typedef struct Graph
 {
    NodeArray nodes;
    EdgeArray edges;
    /* The number of non-dummy items in the graph's nodes/edges array.
     * Do NOT use these as an iteration index over the arrays because the items
     * may not be stored contiguously in the array. Instead use nodes.size and
-    * edges.size. 
+    * edges.size.
     * The equations below are invariant properties of this data structure.
-    * number_of_nodes + node_holes.size = nodes.size. 
+    * number_of_nodes + node_holes.size = nodes.size.
     * number_of_edges + edge_holes.size = edges.size.
     * In words, each of the first nodes.size items of the node array is either
     * a dummy node (a hole created by the removal of a node), or a valid node. */
    int number_of_nodes, number_of_edges;
-   
+
    /* Root nodes referenced in a linked list for fast access. */
    struct RootNodes *root_nodes;
 } Graph;
@@ -90,7 +90,7 @@ typedef struct Graph
 Graph *newGraph(int nodes, int edges);
 
 /* Nodes and edges are created and added to the graph with the addNode and addEdge
- * functions. They take the necessary construction data as their arguments and 
+ * functions. They take the necessary construction data as their arguments and
  * return their index in the graph. */
 int addNode(Graph *graph, bool root, HostLabel label);
 void addRootNode(Graph *graph, int index);
@@ -148,20 +148,21 @@ RootNodes *getRootNodeList(Graph *graph);
  * and two inedge indices. More incident edges are placed in a dynamic array.
  * Pass n = 0 to get the node's first incident edge.
  * Pass n = 1 to get the node's second incident edge.
- * Pass n >= 2 to get the (n-2)th incident edge in the appropriate array. 
- * Designed for iteration e.g. 
- * for(i = 0; i < n->out_edges.size + 2; i++) getNthOutEdge(g, n, i); 
+ * Pass n >= 2 to get the (n-2)th incident edge in the appropriate array.
+ * Designed for iteration e.g.
+ * for(i = 0; i < n->out_edges.size + 2; i++) getNthOutEdge(g, n, i);
  * I'm sure there's a nicer way to do this... */
 Edge *getNthOutEdge(Graph *graph, Node *node, int n);
 Edge *getNthInEdge(Graph *graph, Node *node, int n);
-Node *getSource(Graph *graph, Edge *edge); 
+Node *getSource(Graph *graph, Edge *edge);
 Node *getTarget(Graph *graph, Edge *edge);
 HostLabel getNodeLabel(Graph *graph, int index);
-HostLabel getEdgeLabel(Graph *graph, int index); 
+HostLabel getEdgeLabel(Graph *graph, int index);
 int getIndegree(Graph *graph, int index);
 int getOutdegree(Graph *graph, int index);
 
 void printGraph(Graph *graph, FILE *file);
+void printfGraph(Graph *graph);
 void freeGraph(Graph *graph);
 
 #endif /* INC_GRAPH_H */

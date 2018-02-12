@@ -2,24 +2,24 @@
 
   Copyright 2015-2017 Christopher Bak
 
-  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software: 
+  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software:
   you can redistribute it and/or modify it under the terms of the GNU General
   Public License as published by the Free Software Foundation, either version 3
   of the License, or (at your option) any later version.
 
-  The GP 2 Compiler is distributed in the hope that it will be useful, but 
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+  The GP 2 Compiler is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
   more details.
 
   You should have received a copy of the GNU General Public License
   along with the GP 2 Compiler. If not, see <http://www.gnu.org/licenses/>.
 
   ===========
-  Rule Module 
+  Rule Module
   ===========
 
-  Defines a data structure for rules, storing the information necessary to 
+  Defines a data structure for rules, storing the information necessary to
   facilitate the generation of code to match and apply the rule.
 
 /////////////////////////////////////////////////////////////////////////// */
@@ -31,28 +31,29 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <stdlib.h> 
-#include <stdio.h> 
-#include <string.h> 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-/* The pointer <variables> points to a static array of struct Variable. 
- * variables is the first unused array index: once the array is populated, 
+/* The pointer <variables> points to a static array of struct Variable.
+ * variables is the first unused array index: once the array is populated,
  * it stores the size of the array.
  *
  * The pointers <lhs> and <rhs> point to a single struct RuleGraph, defined below.
  *
- * The pointer <condition> points to a single struct Condition, which is a 
+ * The pointer <condition> points to a single struct Condition, which is a
  * binary tree of struct Predicates. See the definition below. <predicate_count>
  * is used to allocate memory for Predicate pointer arrays in nodes and variables. */
 typedef struct Rule {
-   string name; 
+   string name;
    bool is_rooted, adds_nodes, adds_edges;
-   struct Variable *variable_list; 
+   struct Variable *variable_list;
    int variables;
-   struct RuleGraph *lhs; 
+   struct RuleGraph *lhs;
    struct RuleGraph *rhs;
    struct Condition *condition;
    int predicate_count;
+   double weight;
 } Rule;
 
 /* The variable structure stores information about a variable declared by a rule:
@@ -61,7 +62,7 @@ typedef struct Rule {
  * - Pointers to the predicate in which it participates. If the variable does not
  *   occur in any predicates, this pointer is NULL, otherwise it is a pointer array
  *   with <predicate_count> elements.
- * - A flag set to true if the variable's value is needed for rule application. */ 
+ * - A flag set to true if the variable's value is needed for rule application. */
 typedef struct Variable {
    string name;
    GPType type;
@@ -85,7 +86,7 @@ typedef struct RuleList {
 /* AtomType defined in globals.h. I place the enumerated type here for reference.
  * {INTEGER_CONSTANT = 0, STRING_CONSTANT, VARIABLE, LENGTH, INDEGREE,
  *  OUTDEGREE, NEG, ADD, SUBTRACT, MULTIPLY, DIVIDE, CONCAT} AtomType; */
-typedef struct RuleAtom { 
+typedef struct RuleAtom {
    AtomType type;
    union {
       int number;
@@ -120,7 +121,7 @@ typedef struct RuleGraph {
  * pointers to related graph components, a label, pointers to the predicates
  * in which it participates (as in struct Variable), and degree information. */
 typedef struct RuleNode {
-   int index; 
+   int index;
    /* Root - true if the node is rooted.
     * Remarked - true if the node's mark is changed by the rule.
     * Relabelled - true if the node's list is changed by the rule.
@@ -131,7 +132,7 @@ typedef struct RuleNode {
    bool root, remarked, relabelled, root_changed, indegree_arg, outdegree_arg;
    /* If the node is in the interface of the rule, this points to the
     * corresponding node in the other rule graph. Otherwise, it is NULL. */
-   struct RuleNode *interface; 
+   struct RuleNode *interface;
    /* Linked lists of edge pointers. */
    struct RuleEdges *outedges, *inedges;
    struct RuleLabel label;
@@ -156,7 +157,7 @@ typedef struct RuleEdge {
    /* If the edge is preserved by the rule, this points to the corresponding
     * edge in the other rule graph. Otherwise, it is NULL. */
    struct RuleEdge *interface;
-   struct RuleNode *source, *target; 
+   struct RuleNode *source, *target;
    struct RuleLabel label;
 } RuleEdge;
 
@@ -173,7 +174,7 @@ typedef struct Condition {
    };
 } Condition;
 
-/* Representation of all the predicate expressions used in GP 2 conditions. 
+/* Representation of all the predicate expressions used in GP 2 conditions.
  * These are the leaves of the condition tree. Each predicate has a unique
  * integer identifier, used to generate unique boolean variables to store
  * the results of each predicate at runtime. Nodes and variables contain
@@ -205,7 +206,7 @@ typedef struct Predicate {
 
 /* Allocates memory for a rule structure and its graphs.
  * The arguments are the sizes of the appropriate arrays. */
-Rule *makeRule(int variables, int left_nodes, int left_edges, int right_nodes, 
+Rule *makeRule(int variables, int left_nodes, int left_edges, int right_nodes,
                int right_edges);
 
 /* Populates the <rule->variable_index>th element of the rule's variable array

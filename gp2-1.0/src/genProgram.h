@@ -38,7 +38,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void generateRuntimeMain(List *declarations, string output_dir);
+void generateRuntimeMain(List *declarations, string output_dir, string main_f, bool main_p);
 
 /* Each GP 2 control construct is translated into a fragment of C code.
  * I give the "broad strokes" translation here, excluding the more fiddly

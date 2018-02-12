@@ -88,7 +88,7 @@ bool syntax_error = false;
 %token WHERE EDGETEST
 %token INDEG OUTDEG _LENGTH
 %token INT CHARACTER STRING ATOM LIST
-%token INTERFACE _EMPTY INJECTIVE
+%token INTERFACE _EMPTY INJECTIVE WEIGHT
 %token <mark> MARK ANY_MARK
 %token ARROW
 %token NEQ GTEQ LTEQ
@@ -127,7 +127,7 @@ bool syntax_error = false;
 }
 
 %type <list> Program LocalDecls ComSeq RuleSetCall IDList VarDecls
-             VarList Inter NodeIDList NodeList EdgeList List
+             VarList Inter Weight NodeIDList NodeList EdgeList List
 %type <decl> Declaration
 %type <command> MainDecl Command Block SimpleCommand
 %type <proc> ProcDecl
@@ -332,6 +332,12 @@ RuleDecl: RuleID '(' VarDecls ')' Graph ARROW Graph Inter CondDecl
 					  if($1) free($1); }
         | RuleID '(' ')' Graph ARROW Graph Inter CondDecl
       					{ $$ = newASTRule(@1, $1, NULL, $4, $6, $7, $8);
+					  if($1) free($1); }
+        | RuleID '(' VarDecls ')' Graph ARROW Graph Inter CondDecl WEIGHT '=' DNUM
+            					{ $$ = newASTWeightedRule(@1, $1, $3, $5, $7, $8, $9, $12);
+            					  if($1) free($1); }
+        | RuleID '(' ')' Graph ARROW Graph Inter CondDecl WEIGHT '=' DNUM
+      					{ $$ = newASTWeightedRule(@1, $1, NULL, $4, $6, $7, $8, $11);
 					  if($1) free($1); }
         /* Error-catching productions */
 	| ProcID '(' VarDecls ')' Graph ARROW Graph Inter CondDecl

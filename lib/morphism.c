@@ -171,6 +171,7 @@ void duplicateMorphism(Morphism *s, Morphism *t, Graph *graph)
      }*/
 
    }
+   t->weight = s->weight;
 
 }
 

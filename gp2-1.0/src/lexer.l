@@ -127,6 +127,7 @@ edge                return EDGETEST;
 indeg 		    return INDEG;
 outdeg		    return OUTDEG;
 interface	    return INTERFACE;
+weight        return WEIGHT;
 empty		    return _EMPTY;
 length		    return _LENGTH;
 weighted:             return WEIGHTED;

@@ -394,6 +394,13 @@ GPAtom *newASTNumber(YYLTYPE location, int number)
     return atom;
 }
 
+GPAtom *newASTDnum(YYLTYPE location, double number)
+{
+    GPAtom *atom = makeGPAtom(location, DNUM_CONSTANT);
+    atom->dnum = number;
+    return atom;
+}
+
 GPAtom *newASTString(YYLTYPE location, string string)
 {
     GPAtom *atom = makeGPAtom(location, STRING_CONSTANT);
@@ -556,6 +563,36 @@ GPRule *newASTRule(YYLTYPE location, string name, List *variables,
     rule->predicate_count = 0;
     rule->empty_lhs = false;
     rule->is_predicate = false;
+    rule->weight = 0.0;
+    return rule;
+}
+
+GPRule *newASTWeightedRule(YYLTYPE location, string name, List *variables,
+	           GPGraph *lhs, GPGraph *rhs, List *interface,
+		   GPCondition *condition, double weight)
+{
+    GPRule *rule = malloc(sizeof(GPRule));
+    if(rule == NULL)
+    {
+      print_to_log("Error (AST): malloc failure.\n");
+      exit(1);
+    }
+    rule->id = 0;
+    rule->node_type = RULE;
+    rule->location = location;
+    rule->name = strdup(name);
+    rule->variables = variables;
+    rule->lhs = lhs;
+    rule->rhs = rhs;
+    rule->interface = interface;
+    rule->condition = condition;
+    rule->left_nodes = 0;
+    rule->left_edges = 0;
+    rule->variable_count = 0;
+    rule->predicate_count = 0;
+    rule->empty_lhs = false;
+    rule->is_predicate = false;
+    rule->weight = weight;
     return rule;
 }
 

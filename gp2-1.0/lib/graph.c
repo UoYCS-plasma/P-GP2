@@ -383,6 +383,9 @@ void resetMatchedEdgeFlag(Graph *graph, int index)
  * ======================== */
 Node *getNode(Graph *graph, int index)
 {
+   if(index >= graph->nodes.size){
+     printfGraph(graph);
+   }
    assert(index < graph->nodes.size);
    if(index == -1) return NULL;
    else return &(graph->nodes.items[index]);
@@ -508,6 +511,59 @@ void printGraph(Graph *graph, FILE *file)
       PTF(") ");
    }
    PTF("]\n\n");
+}
+
+
+void printfGraph(Graph *graph)
+{
+   /* The node and edge counts are used in the IDs of the printed graph. The item's
+    * index in the graph is not suitable for this purpose because there may be holes
+    * in the graph's node array. The counts are also used to control the number of
+    * nodes and edges printed per line. */
+   int index, node_count = 0, edge_count = 0;
+   if(graph == NULL || graph->number_of_nodes == 0)
+   {
+      printf("[ | ]\n\n");
+      return;
+   }
+   printf("[ ");
+   /* Maps a node's graph-index to the ID it is printed with (node_count). */
+   int output_indices[graph->nodes.size];
+   for(index = 0; index < graph->nodes.size; index++)
+   {
+      Node *node = getNode(graph, index);
+      if(node->index == -1)
+      {
+         output_indices[index] = -1;
+         continue;
+      }
+      /* Five nodes per line */
+      if(node_count != 0 && node_count % 5 == 0) printf("\n  ");
+      output_indices[index] = node_count;
+      if(node->root) printf("(%d(R), ", node->index);
+      else printf("(%d, ", node->index);
+      printfHostLabel(node->label);
+      printf(") ");
+   }
+   if(graph->number_of_edges == 0)
+   {
+      printf("| ]\n\n");
+      return;
+   }
+   printf("|\n  ");
+   for(index = 0; index < graph->edges.size; index++)
+   {
+      Edge *edge = getEdge(graph, index);
+      if(edge->index == -1) continue;
+
+      /* Three edges per line */
+      if(edge_count != 0 && edge_count % 3 == 0) printf("\n  ");
+      printf("(%d, ", edge_count++);
+      printf("%d, %d, ", edge->source, edge->target);
+      printfHostLabel(edge->label);
+      printf(") ");
+   }
+   printf("]\n\n");
 }
 
 void freeGraph(Graph *graph)

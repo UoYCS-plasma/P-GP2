@@ -1,13 +1,13 @@
 /* Copyright 2015-2017 Christopher Bak
 
-  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software: 
+  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software:
   you can redistribute it and/or modify it under the terms of the GNU General
   Public License as published by the Free Software Foundation, either version 3
   of the License, or (at your option) any later version.
 
-  The GP 2 Compiler is distributed in the hope that it will be useful, but 
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+  The GP 2 Compiler is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
   more details.
 
   You should have received a copy of the GNU General Public License
@@ -26,7 +26,7 @@ typedef struct IndexMap {
    bool root;
    int left_index; /* Set to -1 if the item is not in the LHS graph. */
    int right_index; /* Set to -1 if the item is not in the RHS graph. */
-   string source_id; 
+   string source_id;
    string target_id;
    struct IndexMap *next;
 } IndexMap;
@@ -59,7 +59,7 @@ int findLeftIndexFromId(IndexMap *map, string id)
       if(!strcmp(map->id, id)) return map->left_index;
       else map = map->next;
    }
-   return -1; 
+   return -1;
 }
 
 IndexMap *findMapFromId(IndexMap *map, string id)
@@ -69,7 +69,7 @@ IndexMap *findMapFromId(IndexMap *map, string id)
       if(!strcmp(map->id, id)) return map;
       else map = map->next;
    }
-   return NULL; 
+   return NULL;
 }
 
 IndexMap *findMapFromSrcTgt(IndexMap *map, string source, string target)
@@ -80,7 +80,7 @@ IndexMap *findMapFromSrcTgt(IndexMap *map, string source, string target)
          return map;
       else map = map->next;
    }
-   return NULL; 
+   return NULL;
 }
 
 IndexMap *removeMap(IndexMap *map, IndexMap *map_to_remove)
@@ -130,7 +130,7 @@ static void scanRHSAtom(Rule *rule, bool relabelled, RuleAtom *atom);
 static RuleLabel transformLabel(Rule *rule, GPLabel *ast_label, IndexMap *node_map);
 static RuleList *transformList(Rule *rule, List *ast_list, IndexMap *node_map);
 static RuleAtom *transformAtom(Rule *rule, GPAtom *ast_atom, IndexMap *node_map);
-static Condition *transformCondition(Rule *rule, GPCondition *ast_condition, 
+static Condition *transformCondition(Rule *rule, GPCondition *ast_condition,
                                      bool negated, IndexMap *node_map);
 static void scanPredicateAtom(Rule *rule, RuleAtom *atom, Predicate *predicate);
 
@@ -144,6 +144,7 @@ Rule *transformRule(GPRule *ast_rule)
    int rhs_nodes = countNodes(ast_rule->rhs);
    int rhs_edges = countEdges(ast_rule->rhs);
    Rule *rule = makeRule(ast_rule->variable_count, lhs_nodes, lhs_edges, rhs_nodes, rhs_edges);
+   rule->weight = ast_rule->weight;
    rule->name = strdup(ast_rule->name);
 
    initialiseVariableList(rule, ast_rule->variables);
@@ -190,7 +191,7 @@ static void initialiseVariableList(Rule *rule, List *declarations)
               break;
 
          default:
-              print_to_log("Error (scanVariableList): Unexpected type %d\n", 
+              print_to_log("Error (scanVariableList): Unexpected type %d\n",
                            declarations->type);
               break;
       }
@@ -219,7 +220,7 @@ void scanLHS(Rule *rule, GPGraph *ast_lhs)
        * node in the RHS. */
       node_map = addIndexMap(node_map, ast_node->name, ast_node->root,
                              node_index, -1, NULL, NULL);
-      nodes = nodes->next;   
+      nodes = nodes->next;
    }
 
    List *edges = ast_lhs->edges;
@@ -234,7 +235,7 @@ void scanLHS(Rule *rule, GPGraph *ast_lhs)
          print_to_log("Error (scanLHS): Edge's source %s not found in the node "
                       "map.\n", ast_edge->source);
          exit(0);
-      } 
+      }
       int target_index = findLeftIndexFromId(node_map, ast_edge->target);
       if(target_index == -1)
       {
@@ -253,7 +254,7 @@ void scanLHS(Rule *rule, GPGraph *ast_lhs)
        * edge in the RHS. */
       edge_map = addIndexMap(edge_map, ast_edge->name, false, edge_index, -1,
                              ast_edge->source, ast_edge->target);
-      edges = edges->next;   
+      edges = edges->next;
    }
 }
 
@@ -265,9 +266,9 @@ void scanRHS(Rule *rule, GPGraph *ast_rhs, List *interface)
       GPNode *ast_node = ast_nodes->node;
       RuleLabel label = transformLabel(rule, ast_node->label, node_map);
       int node_index = addRuleNode(rule->rhs, ast_node->root, label);
-      
+
       IndexMap *map = findMapFromId(node_map, ast_node->name);
-      if(map == NULL) 
+      if(map == NULL)
       {
          /* If the node ID does not have an entry in the node map, then the RHS
           * node is added by the rule. Create a new entry with left index -1. */
@@ -281,7 +282,7 @@ void scanRHS(Rule *rule, GPGraph *ast_rhs, List *interface)
           * some LHS node. This is not necessarily an interface (preserved) node:
           * the rule could also delete the left node and add the right one.
           *
-          * Thus, search the interface. If the RHS node is an interface node, 
+          * Thus, search the interface. If the RHS node is an interface node,
           * set the interface pointers of both rule nodes and set the relabelled
           * flag of the right node by testing label equality. Otherwise it is
           * added by the rule. */
@@ -294,7 +295,7 @@ void scanRHS(Rule *rule, GPGraph *ast_rhs, List *interface)
                RuleNode *right_node = getRuleNode(rule->rhs, node_index);
                left_node->interface = right_node;
                right_node->interface = left_node;
-               if(left_node->label.mark == right_node->label.mark) 
+               if(left_node->label.mark == right_node->label.mark)
                   right_node->remarked = false;
                if(equalRuleLists(left_node->label, right_node->label))
                   right_node->relabelled = false;
@@ -302,7 +303,7 @@ void scanRHS(Rule *rule, GPGraph *ast_rhs, List *interface)
                   right_node->root_changed = false;
                break;
             }
-            /* If the end of the interface is reached and the loop has not 
+            /* If the end of the interface is reached and the loop has not
              * exited from the break statement above, then the node is not in
              * the interface. */
             if(iterator->next == NULL) rule->adds_nodes = true;
@@ -311,7 +312,7 @@ void scanRHS(Rule *rule, GPGraph *ast_rhs, List *interface)
          /* Update the map's right index. */
          map->right_index = node_index;
       }
-      ast_nodes = ast_nodes->next;   
+      ast_nodes = ast_nodes->next;
    }
 
    List *ast_edges = ast_rhs->edges;
@@ -341,13 +342,13 @@ void scanRHS(Rule *rule, GPGraph *ast_rhs, List *interface)
       RuleNode *target = getRuleNode(rule->rhs, target_map->right_index);
 
       RuleLabel label = transformLabel(rule, ast_edge->label, node_map);
-      int edge_index = addRuleEdge(rule->rhs, ast_edge->bidirectional, 
+      int edge_index = addRuleEdge(rule->rhs, ast_edge->bidirectional,
                                    source, target, label);
       RuleEdge *edge = getRuleEdge(rule->rhs, edge_index);
 
       /* Edges do not have an explicit interface list. Instead check if both
        * incident nodes are in the interface. If so, an LHS -edge between their
-       * LHS counterparts is a preserved edge. This is checked by calling 
+       * LHS counterparts is a preserved edge. This is checked by calling
        * findMapFromSrcTgt. */
       if(edge->source->interface != NULL && edge->target->interface != NULL)
       {
@@ -355,7 +356,7 @@ void scanRHS(Rule *rule, GPGraph *ast_rhs, List *interface)
          /* If the RHS-edge is bidirectional, search in the other direction. */
          if(map == NULL && ast_edge->bidirectional)
             map = findMapFromSrcTgt(edge_map, target_id, source_id);
-         if(map != NULL) 
+         if(map != NULL)
          {
             RuleEdge *left_edge = getRuleEdge(rule->lhs, map->left_index);
             RuleEdge *right_edge = getRuleEdge(rule->rhs, edge_index);
@@ -368,18 +369,18 @@ void scanRHS(Rule *rule, GPGraph *ast_rhs, List *interface)
             else right_edge->relabelled = true;
             /* Remove the map for the LHS-edge, otherwise a parallel RHS-edge
              * may be associated with this edge. */
-            edge_map = removeMap(edge_map, map);     
+            edge_map = removeMap(edge_map, map);
          }
          else rule->adds_edges = true;
       }
       else rule->adds_edges = true;
-      ast_edges = ast_edges->next;   
+      ast_edges = ast_edges->next;
    }
    /* Iterate over the labels in this graph to get information about variables
     * used in the rule and nodes whose degrees are queried in the RHS. */
    int index;
    for(index = 0; index < rule->rhs->node_index; index++)
-   { 
+   {
       RuleNode *node = getRuleNode(rule->rhs, index);
       if(node->label.list == NULL) continue;
       RuleListItem *item = node->label.list->first;
@@ -486,7 +487,7 @@ static RuleAtom *transformAtom(Rule *rule, GPAtom *ast_atom, IndexMap *node_map)
       exit(1);
    }
    atom->type = ast_atom->type;
-   switch(ast_atom->type) 
+   switch(ast_atom->type)
    {
       case INTEGER_CONSTANT:
            atom->number = ast_atom->number;
@@ -495,7 +496,7 @@ static RuleAtom *transformAtom(Rule *rule, GPAtom *ast_atom, IndexMap *node_map)
       case STRING_CONSTANT:
            atom->string = strdup(ast_atom->string);
            break;
-       
+
       case VARIABLE:
       case LENGTH:
            atom->variable.id = getVariableId(rule, ast_atom->variable.name);
@@ -545,7 +546,7 @@ static RuleAtom *transformAtom(Rule *rule, GPAtom *ast_atom, IndexMap *node_map)
    return atom;
 }
 
-static Condition *transformCondition(Rule *rule, GPCondition *ast_condition, 
+static Condition *transformCondition(Rule *rule, GPCondition *ast_condition,
                                      bool negated, IndexMap *node_map)
 {
    if(ast_condition == NULL) return NULL;
@@ -559,7 +560,7 @@ static Condition *transformCondition(Rule *rule, GPCondition *ast_condition,
       case CHAR_CHECK:
       case STRING_CHECK:
       case ATOM_CHECK:
-           predicate = makeTypeCheck(bool_count++, negated, ast_condition->type, 
+           predicate = makeTypeCheck(bool_count++, negated, ast_condition->type,
                                      getVariableId(rule, ast_condition->var));
            condition->type = 'e';
            condition->predicate = predicate;
@@ -579,7 +580,7 @@ static Condition *transformCondition(Rule *rule, GPCondition *ast_condition,
               RuleLabel label = { .mark = NONE, .length = -1, .list = NULL };
               predicate = makeEdgePred(bool_count++, negated, source_index, target_index, label);
            }
-           else 
+           else
            {
               RuleLabel label = transformLabel(rule, ast_condition->edge_pred.label, node_map);
               predicate = makeEdgePred(bool_count++, negated, source_index, target_index, label);
@@ -646,28 +647,28 @@ static Condition *transformCondition(Rule *rule, GPCondition *ast_condition,
       }
       case BOOL_NOT:
            condition->type = 'n';
-           condition->neg_condition = 
+           condition->neg_condition =
               transformCondition(rule, ast_condition->not_exp, !negated, node_map);
            break;
 
       case BOOL_OR:
            condition->type = 'o';
-           condition->left_condition = 
+           condition->left_condition =
               transformCondition(rule, ast_condition->bin_exp.left_exp, negated, node_map);
-           condition->right_condition = 
+           condition->right_condition =
               transformCondition(rule, ast_condition->bin_exp.right_exp, negated, node_map);
            break;
 
       case BOOL_AND:
            condition->type = 'a';
-           condition->left_condition = 
+           condition->left_condition =
               transformCondition(rule, ast_condition->bin_exp.left_exp, negated, node_map);
-           condition->right_condition = 
+           condition->right_condition =
               transformCondition(rule, ast_condition->bin_exp.right_exp, negated, node_map);
            break;
 
       default:
-           print_to_log("Error (transformCondition): Unexpected type %d.\n", 
+           print_to_log("Error (transformCondition): Unexpected type %d.\n",
                         ast_condition->type);
            break;
    }
@@ -702,7 +703,7 @@ static void scanPredicateAtom(Rule *rule, RuleAtom *atom, Predicate *predicate)
       case NEG:
            scanPredicateAtom(rule, atom->neg_exp, predicate);
            break;
-           
+
       case ADD:
       case SUBTRACT:
       case MULTIPLY:
@@ -713,7 +714,7 @@ static void scanPredicateAtom(Rule *rule, RuleAtom *atom, Predicate *predicate)
            break;
 
       default:
-           print_to_log("Error (scanPredicateAtom): Unexpected type %d.\n", 
+           print_to_log("Error (scanPredicateAtom): Unexpected type %d.\n",
                         atom->type);
            break;
    }

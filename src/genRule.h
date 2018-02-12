@@ -61,11 +61,11 @@
 
 /* Takes the root of the AST of a GP 2 program and generates C modules for
  * each rule in the program. */
-void generateRules(List *declarations, string output_dir);
+void generateRules(List *declarations, string output_dir, string main_f, bool main_p);
 
 /* Create a C module to match and apply the rule. The generated files are
  * called <rule_name>.h and <rule_name>.c.*/
-void generateRuleCode(Rule *rule, bool predicate, string output_dir);
+void generateRuleCode(Rule *rule, bool predicate, string output_dir, string f_prefix, string main_f);
 
 /* The three functions below write the function apply_<rule_name> that makes the
  * necessary changes to the host graph according to the rule and morphism.
@@ -81,8 +81,8 @@ void generateRuleCode(Rule *rule, bool predicate, string output_dir);
  * empty graph. It generates full rule application code, including the evaluation
  * of RHS labels, supported by the RHS label generation functions in the genLabel
  * module. */
-void generateRemoveLHSCode(string rule_name);
-void generateAddRHSCode(Rule *rule);
-void generateApplicationCode(Rule *rule);
+void generateRemoveLHSCode(string rule_name, string f_prefix);
+void generateAddRHSCode(Rule *rule, string f_prefix);
+void generateApplicationCode(Rule *rule, string f_prefix);
 
 #endif /* INC_GEN_RULE_H */

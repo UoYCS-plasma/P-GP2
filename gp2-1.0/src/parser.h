@@ -75,26 +75,27 @@ extern int yydebug;
     INTERFACE = 279,
     _EMPTY = 280,
     INJECTIVE = 281,
-    MARK = 282,
-    ANY_MARK = 283,
-    ARROW = 284,
-    NEQ = 285,
-    GTEQ = 286,
-    LTEQ = 287,
-    NUM = 288,
-    DNUM = 289,
-    STR = 290,
-    PROCID = 291,
-    ID = 292,
-    ROOT = 293,
-    BIDIRECTIONAL = 294,
-    GP_PROGRAM = 295,
-    GP_GRAPH = 296,
-    GP_RULE = 297,
-    OR = 298,
-    AND = 299,
-    NOT = 300,
-    UMINUS = 301
+    WEIGHT = 282,
+    MARK = 283,
+    ANY_MARK = 284,
+    ARROW = 285,
+    NEQ = 286,
+    GTEQ = 287,
+    LTEQ = 288,
+    NUM = 289,
+    DNUM = 290,
+    STR = 291,
+    PROCID = 292,
+    ID = 293,
+    ROOT = 294,
+    BIDIRECTIONAL = 295,
+    GP_PROGRAM = 296,
+    GP_GRAPH = 297,
+    GP_RULE = 298,
+    OR = 299,
+    AND = 300,
+    NOT = 301,
+    UMINUS = 302
   };
 #endif
 /* Tokens.  */
@@ -122,26 +123,27 @@ extern int yydebug;
 #define INTERFACE 279
 #define _EMPTY 280
 #define INJECTIVE 281
-#define MARK 282
-#define ANY_MARK 283
-#define ARROW 284
-#define NEQ 285
-#define GTEQ 286
-#define LTEQ 287
-#define NUM 288
-#define DNUM 289
-#define STR 290
-#define PROCID 291
-#define ID 292
-#define ROOT 293
-#define BIDIRECTIONAL 294
-#define GP_PROGRAM 295
-#define GP_GRAPH 296
-#define GP_RULE 297
-#define OR 298
-#define AND 299
-#define NOT 300
-#define UMINUS 301
+#define WEIGHT 282
+#define MARK 283
+#define ANY_MARK 284
+#define ARROW 285
+#define NEQ 286
+#define GTEQ 287
+#define LTEQ 288
+#define NUM 289
+#define DNUM 290
+#define STR 291
+#define PROCID 292
+#define ID 293
+#define ROOT 294
+#define BIDIRECTIONAL 295
+#define GP_PROGRAM 296
+#define GP_GRAPH 297
+#define GP_RULE 298
+#define OR 299
+#define AND 300
+#define NOT 301
+#define UMINUS 302
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -173,7 +175,7 @@ union YYSTYPE
   int list_type; /* enum ListType */
   int check_type; /* enum CondExpType */
 
-#line 177 "parser.h" /* yacc.c:1909  */
+#line 179 "parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -208,6 +210,6 @@ extern string yytext;
 extern FILE *yyin;
 extern bool syntax_error;
 
-#line 212 "parser.h" /* yacc.c:1909  */
+#line 214 "parser.h" /* yacc.c:1909  */
 
 #endif /* !YY_YY_PARSER_H_INCLUDED  */

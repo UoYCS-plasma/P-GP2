@@ -2,14 +2,14 @@
 
   Copyright 2015-2017 Christopher Bak
 
-  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software: 
+  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software:
   you can redistribute it and/or modify it under the terms of the GNU General
   Public License as published by the Free Software Foundation, either version 3
   of the License, or (at your option) any later version.
 
-  The GP 2 Compiler is distributed in the hope that it will be useful, but 
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+  The GP 2 Compiler is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
   more details.
 
   You should have received a copy of the GNU General Public License
@@ -19,7 +19,7 @@
   Label Module
   ============
 
-  Defines data types and operations host labels. Host lists are implemented 
+  Defines data types and operations host labels. Host lists are implemented
   as doubly-linked lists, and are stored in a hash table to avoid duplication
   of lists that occur multiple times in a graph over the course of a program
   execution.
@@ -35,11 +35,11 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <stdlib.h> 
-#include <stdio.h> 
-#include <string.h> 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-typedef enum {NONE = 0, RED, GREEN, BLUE, GREY, DASHED, ANY} MarkType; 
+typedef enum {NONE = 0, RED, GREEN, BLUE, GREY, DASHED, ANY} MarkType;
 
 typedef struct HostLabel {
    MarkType mark;
@@ -78,12 +78,12 @@ typedef struct Bucket {
 
 /* Hash table to store lists at runtime. Collisions are handled by separate chaining
  * implemented by singly-linked lists ("buckets" as defined above). Lists are added
- * to the host table by making an array of HostAtoms representing the list and 
+ * to the host table by making an array of HostAtoms representing the list and
  * passing it to makeHostList. In this way, each specific list is allocated to heap
  * exactly once and has a single point of reference. */
 extern Bucket **list_store;
 
-/* If list hashing is enabled, makeHostList returns a pointer to the HostList represented 
+/* If list hashing is enabled, makeHostList returns a pointer to the HostList represented
  * by the passed array from the hash table (list_store). If not, the function returns a
  * pointer to a newly-allocated HostList. */
 HostList *makeHostList(HostAtom *array, int length, bool free_strings);
@@ -110,6 +110,8 @@ HostList *copyHostList(HostList *list);
 
 void printHostLabel(HostLabel label, FILE *file);
 void printHostList(HostListItem *item, FILE *file);
+void printfHostLabel(HostLabel label);
+void printfHostList(HostListItem *item);
 
 void freeHostList(HostList *list);
 void freeHostListStore(void);

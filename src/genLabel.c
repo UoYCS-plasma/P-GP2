@@ -29,11 +29,11 @@ typedef struct StringList {
    struct StringList *prev;
 } StringList;
 
-static void generateAtomMatchingCode(Rule *rule, RuleAtom *atom, int indent);
-static void generateVariableMatchingCode(Rule *rule, RuleAtom *atom, int indent);
-static void generateConcatMatchingCode(Rule *rule, RuleAtom *atom, int indent);
+static void generateAtomMatchingCode(Rule *rule, RuleAtom *atom, int indent, string dummy);
+static void generateVariableMatchingCode(Rule *rule, RuleAtom *atom, int indent, string dummy);
+static void generateConcatMatchingCode(Rule *rule, RuleAtom *atom, int indent, string dummy);
 static void generateStringMatchingCode(Rule *rule, StringList *string_exp,
-                                       bool prefix, int indent);
+                                       bool prefix, int indent, string dummy);
 static void generateStringLengthCode(RuleAtom *atom, int indent);
 static void generateStringExpression(RuleAtom *atom, bool first, int indent);
 
@@ -119,7 +119,7 @@ void freeStringList(StringList *list)
  * declared at most once per label at runtime. */
 bool result_declared = false;
 
-void generateFixedListMatchingCode(Rule *rule, RuleLabel label, int indent)
+void generateFixedListMatchingCode(Rule *rule, RuleLabel label, int indent, string dummy)
 {
    PTFI("/* Label Matching */\n", indent);
    PTFI("int new_assignments = 0;\n", indent);
@@ -148,7 +148,7 @@ void generateFixedListMatchingCode(Rule *rule, RuleLabel label, int indent)
       while(item != NULL)
       {
          PTFI("/* Matching rule atom %d. */\n", indent + 3, atom_count);
-         generateAtomMatchingCode(rule, item->atom, indent + 3);
+         generateAtomMatchingCode(rule, item->atom, indent + 3, dummy);
          atom_count++;
          if(item->next != NULL) PTFI("item = item->next;\n\n", indent + 3);
          item = item->next;
@@ -160,7 +160,7 @@ void generateFixedListMatchingCode(Rule *rule, RuleLabel label, int indent)
    result_declared = false;
 }
 
-void generateVariableListMatchingCode(Rule *rule, RuleLabel label, int indent)
+void generateVariableListMatchingCode(Rule *rule, RuleLabel label, int indent, string dummy)
 {
    PTFI("/* Label Matching */\n", indent);
    PTFI("int new_assignments = 0;\n", indent);
@@ -196,7 +196,7 @@ void generateVariableListMatchingCode(Rule *rule, RuleLabel label, int indent)
       PTFI("}\n", indent);
       PTFI("else result = addListAssignment(morphism, %d, label.list);\n",
            indent, list_variable_id);
-      generateVariableResultCode(rule, list_variable_id, true, indent);
+      generateVariableResultCode(rule, list_variable_id, true, indent, dummy);
       /* Reset the flag before function exit. */
       result_declared = false;
       return;
@@ -221,7 +221,7 @@ void generateVariableListMatchingCode(Rule *rule, RuleLabel label, int indent)
       PTFI("/* Check if the end of the host list has been reached. */\n", indent + 3);
       PTFI("if(item == NULL) break;\n", indent + 3);
       PTFI("/* Matching rule atom %d. */\n", indent + 3, atom_count);
-      generateAtomMatchingCode(rule, item->atom, indent + 3);
+      generateAtomMatchingCode(rule, item->atom, indent + 3, dummy);
       PTFI("item = item->next;\n\n", indent + 3);
       atom_count++;
       item = item->next;
@@ -258,7 +258,7 @@ void generateVariableListMatchingCode(Rule *rule, RuleLabel label, int indent)
          PTFI("/* Check if the host list has passed \"start\". */\n", indent + 3);
          PTFI("if(item == start->prev) break;\n", indent + 3);
          PTFI("/* Matching rule atom %d */\n", indent + 3, atom_count);
-         generateAtomMatchingCode(rule, item->atom, indent + 3);
+         generateAtomMatchingCode(rule, item->atom, indent + 3, dummy);
          PTFI("item = item->prev;\n", indent + 3);
          atom_count--;
          item = item->prev;
@@ -303,18 +303,18 @@ void generateVariableListMatchingCode(Rule *rule, RuleLabel label, int indent)
    #endif
    PTFI("}\n", indent + 3);
 
-   generateVariableResultCode(rule, list_variable_id, true, indent + 3);
+   generateVariableResultCode(rule, list_variable_id, true, indent + 3, dummy);
    PTFI("} while(false);\n\n", indent);
    /* Reset the flag before function exit. */
    result_declared = false;
 }
 
-static void generateAtomMatchingCode(Rule *rule, RuleAtom *atom, int indent)
+static void generateAtomMatchingCode(Rule *rule, RuleAtom *atom, int indent, string dummy)
 {
    switch(atom->type)
    {
       case VARIABLE:
-           generateVariableMatchingCode(rule, atom, indent);
+           generateVariableMatchingCode(rule, atom, indent, dummy);
            break;
 
       case INTEGER_CONSTANT:
@@ -332,7 +332,7 @@ static void generateAtomMatchingCode(Rule *rule, RuleAtom *atom, int indent)
            PTFI("if(item->atom.type != 's') break;\n", indent);
            PTFI("else\n", indent);
            PTFI("{\n", indent);
-           generateConcatMatchingCode(rule, atom, indent + 3);
+           generateConcatMatchingCode(rule, atom, indent + 3, dummy);
            PTFI("}\n", indent);
            break;
 
@@ -343,7 +343,7 @@ static void generateAtomMatchingCode(Rule *rule, RuleAtom *atom, int indent)
    }
 }
 
-static void generateVariableMatchingCode(Rule *rule, RuleAtom *atom, int indent)
+static void generateVariableMatchingCode(Rule *rule, RuleAtom *atom, int indent, string dummy)
 {
    if(!result_declared)
    {
@@ -357,7 +357,7 @@ static void generateVariableMatchingCode(Rule *rule, RuleAtom *atom, int indent)
            PTFI("if(item->atom.type != 'i') break;\n", indent);
            PTFI("result = addIntegerAssignment(morphism, %d, item->atom.num);\n",
                 indent, atom->variable.id);
-           generateVariableResultCode(rule, atom->variable.id, false, indent);
+           generateVariableResultCode(rule, atom->variable.id, false, indent, dummy);
            break;
 
       case CHARACTER_VAR:
@@ -366,7 +366,7 @@ static void generateVariableMatchingCode(Rule *rule, RuleAtom *atom, int indent)
            PTFI("if(strlen(item->atom.str) != 1) break;\n", indent);
            PTFI("result = addStringAssignment(morphism, %d, item->atom.str);\n",
                 indent , atom->variable.id);
-           generateVariableResultCode(rule, atom->variable.id, false, indent);
+           generateVariableResultCode(rule, atom->variable.id, false, indent, dummy);
            break;
 
       case STRING_VAR:
@@ -374,7 +374,7 @@ static void generateVariableMatchingCode(Rule *rule, RuleAtom *atom, int indent)
            PTFI("if(item->atom.type != 's') break;\n", indent);
            PTFI("result = addStringAssignment(morphism, %d, item->atom.str);\n",
                 indent, atom->variable.id);
-           generateVariableResultCode(rule, atom->variable.id, false, indent);
+           generateVariableResultCode(rule, atom->variable.id, false, indent, dummy);
            break;
 
       case ATOM_VAR:
@@ -384,7 +384,7 @@ static void generateVariableMatchingCode(Rule *rule, RuleAtom *atom, int indent)
                 indent, atom->variable.id);
            PTFI("else result = addStringAssignment(morphism, %d, item->atom.str);\n",
                 indent, atom->variable.id);
-           generateVariableResultCode(rule, atom->variable.id, false, indent);
+           generateVariableResultCode(rule, atom->variable.id, false, indent, dummy);
            break;
 
       case LIST_VAR:
@@ -399,7 +399,7 @@ static void generateVariableMatchingCode(Rule *rule, RuleAtom *atom, int indent)
    }
 }
 
-static void generateConcatMatchingCode(Rule *rule, RuleAtom *atom, int indent)
+static void generateConcatMatchingCode(Rule *rule, RuleAtom *atom, int indent, string dummy)
 {
    StringList *list = NULL;
    list = stringExpToList(list, atom->bin_op.left_exp);
@@ -426,7 +426,7 @@ static void generateConcatMatchingCode(Rule *rule, RuleAtom *atom, int indent)
       while(iterator != NULL)
       {
          PTFI("if(start >= strlen(host_string)) break;\n", indent);
-         generateStringMatchingCode(rule, iterator, true, indent);
+         generateStringMatchingCode(rule, iterator, true, indent, dummy);
          iterator = iterator->next;
       }
    }
@@ -439,7 +439,7 @@ static void generateConcatMatchingCode(Rule *rule, RuleAtom *atom, int indent)
       while(iterator->type != 3)
       {
          PTFI("if(start >= strlen(host_string)) break;\n", indent);
-         generateStringMatchingCode(rule, iterator, true, indent);
+         generateStringMatchingCode(rule, iterator, true, indent, dummy);
          iterator = iterator->next;
       }
       PTFI("if(start > strlen(host_string)) break;\n", indent);
@@ -456,7 +456,7 @@ static void generateConcatMatchingCode(Rule *rule, RuleAtom *atom, int indent)
       while(iterator->type != 3)
       {
          PTFI("if(end < start) break;\n", indent );
-         generateStringMatchingCode(rule, iterator, false, indent);
+         generateStringMatchingCode(rule, iterator, false, indent, dummy);
          iterator = iterator->prev;
       }
    }
@@ -477,7 +477,7 @@ static void generateConcatMatchingCode(Rule *rule, RuleAtom *atom, int indent)
    PTFI("substring[end - start + 1] = '\\0';\n", indent + 3);
    PTFI("result = addStringAssignment(morphism, %d, substring);\n",
         indent + 3, iterator->variable_id);
-   generateVariableResultCode(rule, iterator->variable_id, false, indent);
+   generateVariableResultCode(rule, iterator->variable_id, false, indent, dummy);
    PTFI("}\n", indent);
    freeStringList(list);
 }
@@ -485,7 +485,7 @@ static void generateConcatMatchingCode(Rule *rule, RuleAtom *atom, int indent)
 bool offset_declared = false, host_character_declared = false;
 
 static void generateStringMatchingCode(Rule *rule, StringList *string_exp,
-                                       bool prefix, int indent)
+                                       bool prefix, int indent, string dummy)
 {
    /* String Constant */
    if(string_exp->type == 1)
@@ -539,11 +539,11 @@ static void generateStringMatchingCode(Rule *rule, StringList *string_exp,
       }
       PTFI("result = addStringAssignment(morphism, %d, host_character);\n",
            indent, string_exp->variable_id);
-      generateVariableResultCode(rule, string_exp->variable_id, false, indent);
+      generateVariableResultCode(rule, string_exp->variable_id, false, indent, dummy);
    }
 }
 
-void generateVariableResultCode(Rule *rule, int id, bool list_variable, int indent)
+void generateVariableResultCode(Rule *rule, int id, bool list_variable, int indent, string dummy)
 {
    PTFI("if(result >= 0)\n", indent);
    PTFI("{\n", indent);
@@ -555,7 +555,7 @@ void generateVariableResultCode(Rule *rule, int id, bool list_variable, int inde
       PTFI("/* Update global booleans for the variable's predicates. */\n", indent + 3);
       int index;
       for(index = 0; index < variable.predicate_count; index++)
-         PTFI("evaluatePredicate%d(morphism);\n", indent + 3,
+         PTFI("evaluatePredicate%s%d(morphism);\n", indent + 3, dummy,
               variable.predicates[index]->bool_id);
       PTFI("if(!evaluateCondition())\n", indent + 3);
       PTFI("{\n", indent + 3);
@@ -564,8 +564,8 @@ void generateVariableResultCode(Rule *rule, int id, bool list_variable, int inde
       for(index = 0; index < variable.predicate_count; index++)
       {
          Predicate *predicate = variable.predicates[index];
-         if(predicate->negated) PTFI("b%d = false;\n", indent + 6, predicate->bool_id);
-         else PTFI("b%d = true;\n", indent + 6, predicate->bool_id);
+         if(predicate->negated) PTFI("%sb%d = false;\n", indent + 6, dummy, predicate->bool_id);
+         else PTFI("%sb%d = true;\n", indent + 6, dummy, predicate->bool_id);
       }
       if(!list_variable) PTFI("break;\n", indent + 6);
       PTFI("}\n", indent + 3);
@@ -620,7 +620,7 @@ int host_label_count = 0, length_count = 0;
  * 3 - Second list argument of a relational expression in a condition.
  *
  * The 'count' argument is used to generate unique variable names. */
-void generateLabelEvaluationCode(RuleLabel label, bool node, int count, int context, int indent)
+void generateLabelEvaluationCode(RuleLabel label, bool node, int count, int context, int indent, string f_prefix)
 {
    /* Contexts 0 and 1 require code to populate an array of atoms and create a
     * host label from them. Contexts 2 and 3 require only the list component and
@@ -634,10 +634,10 @@ void generateLabelEvaluationCode(RuleLabel label, bool node, int count, int cont
          * host item's label. */
          if(label.mark == ANY)
          {
-            if(node) PTFI("HostLabel host_label%d = getNodeLabel(host, host_node_index);\n",
-                        indent, host_label_count);
-            else PTFI("HostLabel host_label%d = getEdgeLabel(host, host_edge_index);\n",
-                     indent, host_label_count);
+            if(node) PTFI("HostLabel host_label%d = getNodeLabel(%shost, host_node_index);\n",
+                        indent, host_label_count, f_prefix);
+            else PTFI("HostLabel host_label%d = getEdgeLabel(%shost, host_edge_index);\n",
+                     indent, host_label_count, f_prefix);
             PTFI("label = makeEmptyLabel(host_label%d.mark);\n\n", indent, host_label_count);
          }
          else PTFI("label = makeEmptyLabel(%d);\n\n", indent, label.mark);
@@ -748,8 +748,8 @@ void generateLabelEvaluationCode(RuleLabel label, bool node, int count, int cont
               if(context == 0)
                    PTFI("array%d[index%d++].num = indegree%d;\n",
                         indent, count, count, atom->node_id);
-              else PTFI("array%d[index%d++].num = getIndegree(host, n%d);\n",
-                        indent, count, count, atom->node_id);
+              else PTFI("array%d[index%d++].num = getIndegree(%shost, n%d);\n",
+                        indent, count, count, f_prefix, atom->node_id);
               break;
 
          case OUTDEGREE:
@@ -757,8 +757,8 @@ void generateLabelEvaluationCode(RuleLabel label, bool node, int count, int cont
               if(context == 0)
                    PTFI("array%d[index%d++].num = outdegree%d;\n",
                         indent, count, count, atom->node_id);
-              else PTFI("array%d[index%d++].num = getOutdegree(host, n%d);\n",
-                        indent, count, count, atom->node_id);
+              else PTFI("array%d[index%d++].num = getOutdegree(%shost, n%d);\n",
+                        indent, count, count, f_prefix, atom->node_id);
               break;
 
          case LENGTH:
@@ -769,7 +769,7 @@ void generateLabelEvaluationCode(RuleLabel label, bool node, int count, int cont
          case DIVIDE:
               PTFI("array%d[index%d].type = 'i';\n", indent, count, count);
               PTFI("array%d[index%d++].num = ", indent, count, count);
-              generateIntExpression(atom, context, false);
+              generateIntExpression(atom, context, false, f_prefix);
               PTF(";\n");
               break;
 
@@ -802,10 +802,10 @@ void generateLabelEvaluationCode(RuleLabel label, bool node, int count, int cont
       /* If the RHS has the 'ANY' mark, generate code to retrieve the mark of the
        * host item's label. */
       {
-         if(node) PTFI("HostLabel host_label%d = getNodeLabel(host, host_node_index);\n",
-                       indent, host_label_count);
-         else PTFI("HostLabel host_label%d = getEdgeLabel(host, host_edge_index);\n",
-                   indent, host_label_count);
+         if(node) PTFI("HostLabel host_label%d = getNodeLabel(%shost, host_node_index);\n",
+                       indent, host_label_count, f_prefix);
+         else PTFI("HostLabel host_label%d = getEdgeLabel(%shost, host_edge_index);\n",
+                   indent, host_label_count, f_prefix);
       }
       PTFI("if(list_length%d > 0)\n", indent, count);
       PTFI("{\n", indent);
@@ -829,7 +829,7 @@ void generateLabelEvaluationCode(RuleLabel label, bool node, int count, int cont
  * represents. For example, given the label (i + 1) * length(s), where i is an
  * integer variable and s is a string variable, generateIntExpression prints:
  * (i_var + 1) * (int)strlen(s_var); */
-void generateIntExpression(RuleAtom *atom, int context, bool nested)
+void generateIntExpression(RuleAtom *atom, int context, bool nested, string f_prefix)
 {
    switch(atom->type)
    {
@@ -860,17 +860,17 @@ void generateIntExpression(RuleAtom *atom, int context, bool nested)
 
       case INDEGREE:
            if(context == 0) PTF("indegree%d", atom->node_id);
-           else PTF("getIndegree(host, n%d)", atom->node_id);
+           else PTF("getIndegree(%shost, n%d)", f_prefix, atom->node_id);
            break;
 
       case OUTDEGREE:
            if(context == 0) PTF("outdegree%d", atom->node_id);
-           else PTF("getOutdegree(host, n%d)", atom->node_id);
+           else PTF("getOutdegree(%shost, n%d)", f_prefix, atom->node_id);
            break;
 
       case NEG:
            PTF("(-");
-           generateIntExpression(atom->neg_exp, context, true);
+           generateIntExpression(atom->neg_exp, context, true, f_prefix);
            PTF(")");
            break;
 
@@ -879,12 +879,12 @@ void generateIntExpression(RuleAtom *atom, int context, bool nested)
       case MULTIPLY:
       case DIVIDE:
            if(nested) PTF("(");
-           generateIntExpression(atom->bin_op.left_exp, context, true);
+           generateIntExpression(atom->bin_op.left_exp, context, true, f_prefix);
            if(atom->type == ADD) PTF(" + ");
            if(atom->type == SUBTRACT) PTF(" - ");
            if(atom->type == MULTIPLY) PTF(" * ");
            if(atom->type == DIVIDE) PTF(" / ");
-           generateIntExpression(atom->bin_op.right_exp, context, true);
+           generateIntExpression(atom->bin_op.right_exp, context, true, f_prefix);
            if(nested) PTF(")");
            break;
 

@@ -63,31 +63,39 @@ typedef enum {MAIN_BODY, IF_BODY, TRY_BODY, LOOP_BODY} ContextType;
 } CommandData;
 
 /* Arguments passed to the newGraph function at runtime. */
-#define HOST_NODE_SIZE 128
-#define HOST_EDGE_SIZE 128
+#define HOST_NODE_SIZE 100000
+#define HOST_EDGE_SIZE 100000
 
-static void generateMorphismCode(List *declarations, char type, bool first_call);
-static void generateProgramCode(GPCommand *command, CommandData data);
+static void generateMorphismCode(List *declarations, char type, bool first_call, string f_prefix);
+static void generateProgramCode(GPCommand *command, CommandData data, string f_prefix, bool main_p);
 static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
-                             bool last_rule, CommandData data, char mode);
-static void generateBranchStatement(GPCommand *command, CommandData data);
-static void generateLoopStatement(GPCommand *command, CommandData data);
-static void generateFailureCode(string rule_name, CommandData data);
+                             bool last_rule, CommandData data, char mode, string f_prefix, bool main_p);
+static void generateBranchStatement(GPCommand *command, CommandData data, string f_prefix, bool main_p);
+static void generateLoopStatement(GPCommand *command, CommandData data, string f_prefix, bool main_p);
+static void generateFailureCode(string rule_name, CommandData data, string f_prefix, bool main_p);
 static bool neverFails(GPCommand *command);
 static bool nullCommand(GPCommand *command);
 static bool singleRule(GPCommand *command);
 
-void generateRuntimeMain(List *declarations, string output_dir)
+void generateRuntimeMain(List *declarations, string output_dir, string main_f, bool main_p)
 {
-   int length = strlen(output_dir) + 7;
+   int length = strlen(output_dir) + strlen(main_f) + 3;
    char main_file[length];
    strcpy(main_file, output_dir);
-   strcat(main_file, "/main.c");
+   strcat(main_file, "/");
+   strcat(main_file, main_f);
+   strcat(main_file, ".c");
+   printf("%s\n", main_file);
    file = fopen(main_file, "w");
    if(file == NULL) {
      perror(main_file);
      exit(1);
    }
+
+    string f_prefix = "";
+    if(!main_p){
+    f_prefix = strcat(strdup(main_f), "_");
+    }
 
    PTF("#include <time.h>\n");
    PTF("#include \"common.h\"\n");
@@ -96,106 +104,153 @@ void generateRuntimeMain(List *declarations, string output_dir)
    PTF("#include \"graphStacks.h\"\n");
    PTF("#include \"parser.h\"\n");
    PTF("#include \"morphism.h\"\n\n");
+   if(!main_p){
+   //PTF("#include \"%s.h\"\n\n", main_f);
+   }
 
    /* Declare the global morphism variables for each rule. */
-   generateMorphismCode(declarations, 'd', true);
+   generateMorphismCode(declarations, 'd', true, f_prefix);
 
    /* Declare the runtime global variables and functions. */
-   generateMorphismCode(declarations, 'f', true);
+   generateMorphismCode(declarations, 'f', true, f_prefix);
 
-    PTF("Graph *host = NULL;\n");
-    PTF("int *node_map = NULL;\n\n");
+   if(!main_p){
+     FILE *header = NULL;
+     int length = strlen(output_dir) + strlen(main_f) + 3;
 
-    PTF("MorphismPot *pot = NULL;\n");
+     char header_name[length];
+     strcpy(header_name, output_dir);
+     strcat(header_name, "/");
+     strcat(header_name, main_f);
+     strcat(header_name, ".h");
+     printf("Header file %s\n", header_name);
+     header = fopen(header_name, "w");
+     if(header == NULL) {
+        perror(main_f);
+        exit(1);
+     }
+     fprintf(header, "extern Graph *%shost;\n", f_prefix);
+     fprintf(header, "extern int *%snode_map;\n", f_prefix);
 
-   PTF("static void garbageCollect(void)\n");
+     fprintf(header, "extern MorphismPot *%spot;\n\n", f_prefix);
+     fprintf(header, "int %sexecute(Graph* host_graph);\n", f_prefix);
+     fclose(header);
+       PTF("Graph* %shost = NULL;\n", f_prefix);
+       PTF("int* %snode_map = NULL;\n", f_prefix);
+       PTF("MorphismPot* %spot = NULL;\n\n", f_prefix);
+   }
+
+   else{
+     PTF("Graph *%shost = NULL;\n", f_prefix);
+     PTF("int *%snode_map = NULL;\n\n", f_prefix);
+
+     PTF("MorphismPot *%spot = NULL;\n", f_prefix);
+   }
+   PTF("static void %sgarbageCollect(void)\n", f_prefix);
    PTF("{\n");
-   PTF("   freeGraph(host);\n");
+   if(main_p){
+     PTF("   freeGraph(%shost);\n", f_prefix);
+   }
    #ifdef LIST_HASHING
       printf("List hashing enabled!\n");
-      PTF("   freeHostListStore();\n");
+      if(main_p){
+        PTF("   freeHostListStore();\n");
+      }
    #endif
-   PTF("   freeMorphisms();\n");
-   PTF("   freePot(pot);\n");
-   if(graph_copying) PTF("   freeGraphStack();\n");
-   else PTF("   freeGraphChangeStack();\n");
-   PTF("   closeLogFile();\n");
-   #if defined GRAPH_TRACING || defined RULE_TRACING || defined BACKTRACK_TRACING
-      PTF("   closeTraceFile();\n");
-   #endif
+   PTF("   %sfreeMorphisms();\n", f_prefix);
+   PTF("   freePot(%spot);\n", f_prefix);
+   if(main_p){
+   if(graph_copying)
+     PTF("   freeGraphStack();\n");
+    else PTF("   freeGraphChangeStack();\n");
+     PTF("   closeLogFile();\n");
+     #if defined GRAPH_TRACING || defined RULE_TRACING || defined BACKTRACK_TRACING
+        PTF("   closeTraceFile();\n");
+     #endif
+   }
    PTF("}\n\n");
 
 
    /* Print the function that builds the host graph via the host graph parser. */
-   PTF("static Graph *buildHostGraph(char *host_file)\n");
-   PTF("{\n");
-   PTFI("yyin = fopen(host_file, \"r\");\n", 3);
-   PTFI("if(yyin == NULL)\n", 3);
-   PTFI("{\n", 3);
-   PTFI("perror(host_file);\n", 6);
-   PTFI("return NULL;\n", 6);
-   PTFI("}\n\n", 3);
-   PTFI("host = newGraph(%d, %d);\n", 3, HOST_NODE_SIZE, HOST_EDGE_SIZE);
-   PTFI("node_map = calloc(%d, sizeof(int));\n", 3, HOST_NODE_SIZE);
-   PTFI("if(node_map == NULL)\n", 3);
-   PTFI("{\n", 3);
-   PTFI("freeGraph(host);\n", 6);
-   PTFI("return NULL;\n", 6);
-   PTFI("}\n", 3);
-   PTFI("/* The parser populates the host graph using node_map to add edges with\n", 3);
-   PTFI(" * the correct source and target indices. */\n", 3);
-   PTFI("int result = yyparse();\n", 3);
-   PTFI("free(node_map);\n", 3);
-   PTFI("fclose(yyin);\n", 3);
-   PTFI("if(result == 0) return host;\n", 3);
-   PTFI("else\n", 3);
-   PTFI("{\n", 3);
-   PTFI("freeGraph(host);\n", 6);
-   PTFI("return NULL;\n", 6);
-   PTFI("}\n", 3);
-   PTF("}\n\n");
+   if(main_p){
+     PTF("static Graph *buildHostGraph(char *host_file)\n");
+     PTF("{\n");
+     PTFI("yyin = fopen(host_file, \"r\");\n", 3);
+     PTFI("if(yyin == NULL)\n", 3);
+     PTFI("{\n", 3);
+     PTFI("perror(host_file);\n", 6);
+     PTFI("return NULL;\n", 6);
+     PTFI("}\n\n", 3);
+     PTFI("%shost = newGraph(%d, %d);\n", 3, f_prefix, HOST_NODE_SIZE, HOST_EDGE_SIZE);
+     PTFI("%snode_map = calloc(%d, sizeof(int));\n", 3, f_prefix, HOST_NODE_SIZE);
+     PTFI("if(%snode_map == NULL)\n", 3, f_prefix);
+     PTFI("{\n", 3);
+     PTFI("freeGraph(%shost);\n", 6, f_prefix);
+     PTFI("return NULL;\n", 6);
+     PTFI("}\n", 3);
+     PTFI("/* The parser populates the host graph using node_map to add edges with\n", 3);
+     PTFI(" * the correct source and target indices. */\n", 3);
+     PTFI("int result = yyparse();\n", 3);
+     PTFI("free(%snode_map);\n", 3, f_prefix);
+     PTFI("fclose(yyin);\n", 3);
+     PTFI("if(result == 0) return %shost;\n", 3, f_prefix);
+     PTFI("else\n", 3);
+     PTFI("{\n", 3);
+     PTFI("freeGraph(%shost);\n", 6, f_prefix);
+     PTFI("return NULL;\n", 6);
+     PTFI("}\n", 3);
+     PTF("}\n\n");
+   }
 
-   PTF("bool success = true;\n\n");
+   PTF("bool %ssuccess = true;\n\n", f_prefix);
+   if(main_p){
+     /* Open the runtime's main function and set up the execution environment. */
+     PTF("int main(int argc, char **argv)\n");
+     PTF("{\n");
+     PTFI("srand(time(NULL));\n", 3);
+     PTFI("openLogFile(\"gp2.log\");\n\n", 3);
+     PTFI("if(argc != 2)\n", 3);
+     PTFI("{\n", 3);
+     PTFI("fprintf(stderr, \"Error: missing <host-file> argument.\\n\");\n", 6);
+     PTFI("return 0;\n", 6);
+     PTFI("}\n\n", 3);
+     #if defined GRAPH_TRACING || defined RULE_TRACING || defined BACKTRACK_TRACING
+        PTFI("openTraceFile(\"gp2.trace\");\n", 3);
+     #endif
 
-   /* Open the runtime's main function and set up the execution environment. */
-   PTF("int main(int argc, char **argv)\n");
-   PTF("{\n");
-   PTFI("srand(time(NULL));\n", 3);
-   PTFI("openLogFile(\"gp2.log\");\n\n", 3);
-   PTFI("if(argc != 2)\n", 3);
-   PTFI("{\n", 3);
-   PTFI("fprintf(stderr, \"Error: missing <host-file> argument.\\n\");\n", 6);
-   PTFI("return 0;\n", 6);
-   PTFI("}\n\n", 3);
-   #if defined GRAPH_TRACING || defined RULE_TRACING || defined BACKTRACK_TRACING
-      PTFI("openTraceFile(\"gp2.trace\");\n", 3);
-   #endif
+     PTFI("%shost = buildHostGraph(argv[1]);\n", 3, f_prefix);
+     PTFI("if(%shost == NULL)\n", 3, f_prefix);
+     PTFI("{\n", 3);
+     PTFI("fprintf(stderr, \"Error parsing host graph file.\\n\");\n", 6);
+     PTFI("return 0;\n", 6);
+     PTFI("}\n", 3);
 
-   PTFI("host = buildHostGraph(argv[1]);\n", 3);
-   PTFI("if(host == NULL)\n", 3);
-   PTFI("{\n", 3);
-   PTFI("fprintf(stderr, \"Error parsing host graph file.\\n\");\n", 6);
-   PTFI("return 0;\n", 6);
-   PTFI("}\n", 3);
+     PTFI("FILE *output_file = fopen(\"gp2.output\", \"w\");\n", 3);
+     PTFI("if(output_file == NULL)\n", 3);
+     PTFI("{\n", 3);
+     PTFI("perror(\"gp2.output\");\n", 6);
+     PTFI("exit(1);\n", 6);
+     PTFI("}\n", 3);
+   }
+   else{
+     /* Program's function call. */
+     PTF("int %sexecute(Graph* host_graph)\n", f_prefix);
+     PTF("{\n");
+     PTFI("%shost = host_graph;\n", 3, f_prefix);
+     PTFI("%ssuccess = true;\n", 3, f_prefix);
+   }
 
-   PTFI("pot = makeMorphismPot();", 3);
-   PTFI("printf(\"Pot Created! \\n\");\n", 3);
-   PTFI("emptyPot(pot);", 3);
-
-   PTFI("FILE *output_file = fopen(\"gp2.output\", \"w\");\n", 3);
-   PTFI("if(output_file == NULL)\n", 3);
-   PTFI("{\n", 3);
-   PTFI("perror(\"gp2.output\");\n", 6);
-   PTFI("exit(1);\n", 6);
-   PTFI("}\n", 3);
+   PTFI("%spot = makeMorphismPot();\n", 3, f_prefix);
+   PTFI("emptyPot(%spot);\n", 3, f_prefix);
 
    #ifdef GRAPH_TRACING
       PTFI("print_trace(\"Start Graph: \\n\");\n", 3);
-      PTFI("printGraph(host, trace_file);\n\n", 3);
+      PTFI("printfGraph(%shost);\n", 3, f_prefix);
+      PTFI("printGraph(%shost, trace_file);\n\n", 3, f_prefix);
    #endif
 
    /* Print the calls to allocate memory for each morphism. */
-   generateMorphismCode(declarations, 'm', true);
+   generateMorphismCode(declarations, 'm', true, f_prefix);
 
    /* Find the main declaration and generate code from its command sequence. */
    List *iterator = declarations;
@@ -205,18 +260,114 @@ void generateRuntimeMain(List *declarations, string output_dir)
       if(decl->type == MAIN_DECLARATION)
       {
          CommandData initialData = {MAIN_BODY, 0, false, -1, 3};
-         generateProgramCode(decl->main_program, initialData);
+         generateProgramCode(decl->main_program, initialData, f_prefix, main_p);
       }
       iterator = iterator->next;
    }
-   PTF("   printGraph(host, output_file);\n");
-   PTF("   printf(\"Output graph saved to file gp2.output\\n\");\n");
-   PTF("   garbageCollect();\n");
-   //PTF("   printf(\"Graph changes recorded: %%d\\n\", graph_change_count);\n");
-   PTF("   fclose(output_file);\n");
+
+   if(main_p){
+   PTF("   printfGraph(%shost);\n", f_prefix);
+   PTF("   printGraph(%shost, output_file);\n", f_prefix);
+   PTF("   printf(\"Output graph saved to file gp2.output!\\n\");\n");
+   }
+   PTF("   %sgarbageCollect();\n", f_prefix);
+   if(main_p){
+     //PTF("   printf(\"Graph changes recorded: %%d\\n\", graph_change_count);\n");
+     PTF("   fclose(output_file);\n");
+   }
    PTF("   return 0;\n");
    PTF("}\n\n");
    fclose(file);
+
+   if(!main_p){
+     char main_c_file[length];
+     length = strlen(output_dir) + 12;
+     strcpy(main_c_file, output_dir);
+     strcat(main_c_file, "/");
+     strcat(main_c_file, "main.c.demo");
+     printf("Demo file: %s\n", main_c_file);
+     file = fopen(main_c_file, "w");
+     if(file == NULL) {
+       perror(main_file);
+       exit(1);
+     }
+      PTF("#include <time.h>\n");
+      PTF("#include \"common.h\"\n");
+      PTF("#include \"debug.h\"\n");
+      PTF("#include \"graph.h\"\n");
+      PTF("#include \"graphStacks.h\"\n");
+      PTF("#include \"parser.h\"\n");
+      PTF("#include \"morphism.h\"\n\n");
+      PTF("#include \"neutral.h\"\n\n");
+     /* Open the runtime's main function and set up the execution environment. */
+     PTF("Graph *host = NULL;\n");
+     PTF("int *node_map = NULL;\n\n");
+
+     PTF("static Graph *buildHostGraph(char *host_file)\n");
+     PTF("{\n");
+     PTFI("yyin = fopen(host_file, \"r\");\n", 3);
+     PTFI("if(yyin == NULL)\n", 3);
+     PTFI("{\n", 3);
+     PTFI("perror(host_file);\n", 6);
+     PTFI("return NULL;\n", 6);
+     PTFI("}\n\n", 3);
+     PTFI("host = newGraph(%d, %d);\n", 3, HOST_NODE_SIZE, HOST_EDGE_SIZE);
+     PTFI("node_map = calloc(%d, sizeof(int));\n", 3, HOST_NODE_SIZE);
+     PTFI("if(node_map == NULL)\n", 3);
+     PTFI("{\n", 3);
+     PTFI("freeGraph(host);\n", 6);
+     PTFI("return NULL;\n", 6);
+     PTFI("}\n", 3);
+     PTFI("/* The parser populates the host graph using node_map to add edges with\n", 3);
+     PTFI(" * the correct source and target indices. */\n", 3);
+     PTFI("int result = yyparse();\n", 3);
+     PTFI("free(node_map);\n", 3);
+     PTFI("fclose(yyin);\n", 3);
+     PTFI("if(result == 0) return host;\n", 3);
+     PTFI("else\n", 3);
+     PTFI("{\n", 3);
+     PTFI("freeGraph(host);\n", 6);
+     PTFI("return NULL;\n", 6);
+     PTFI("}\n", 3);
+     PTF("}\n\n");
+
+     PTF("int main(int argc, char **argv)\n");
+     PTF("{\n");
+     PTFI("srand(time(NULL));\n", 3);
+     PTFI("if(argc != 2)\n", 3);
+     PTFI("{\n", 3);
+     PTFI("fprintf(stderr, \"Error: missing <host-file> argument.\\n\");\n", 6);
+     PTFI("return 0;\n", 6);
+     PTFI("}\n\n", 3);
+
+     PTFI("%shost = buildHostGraph(argv[1]);\n", 3, f_prefix);
+     PTFI("if(%shost == NULL)\n", 3, f_prefix);
+     PTFI("{\n", 3);
+     PTFI("fprintf(stderr, \"Error parsing host graph file.\\n\");\n", 6);
+     PTFI("return 0;\n", 6);
+     PTFI("}\n", 3);
+     PTFI("%sexecute(%shost);\n", 3, f_prefix, f_prefix);
+
+     PTFI("FILE *output_file = fopen(\"gp2.output\", \"w\");\n", 3);
+     PTFI("if(output_file == NULL)\n", 3);
+     PTFI("{\n", 3);
+     PTFI("perror(\"gp2.output\");\n", 6);
+     PTFI("exit(1);\n", 6);
+     PTFI("}\n", 3);
+
+     PTF("   printfGraph(%shost);\n", f_prefix);
+     PTF("   printGraph(%shost, output_file);\n", f_prefix);
+     PTF("   printf(\"Output graph saved to file gp2.output!\\n\");\n");
+
+     //PTF("   printf(\"Graph changes recorded: %%d\\n\", graph_change_count);\n");
+     PTF("   fclose(output_file);\n");
+
+     PTF("   return 0;\n");
+
+     PTF("}\n");
+
+     fclose(file);
+   }
 }
 
 /* For each rule declaration, generate code to handle the morphism variables at
@@ -235,10 +386,10 @@ void generateRuntimeMain(List *declarations, string output_dir)
  * Type (f)reeMorphism switches on the printing of the freeMorphisms function.
  * For each rule declaration, a call to freeMorphism is printed. */
 
-static void generateMorphismCode(List *declarations, char type, bool first_call)
+static void generateMorphismCode(List *declarations, char type, bool first_call, string f_prefix)
 {
    assert(type == 'm' || type == 'f' || type == 'd');
-   if(type == 'f' && first_call) PTF("static void freeMorphisms(void)\n{\n");
+   if(type == 'f' && first_call) PTF("static void %sfreeMorphisms(void)\n{\n", f_prefix);
    while(declarations != NULL)
    {
       GPDeclaration *decl = declarations->declaration;
@@ -249,7 +400,7 @@ static void generateMorphismCode(List *declarations, char type, bool first_call)
 
          case PROCEDURE_DECLARATION:
               if(decl->procedure->local_decls != NULL)
-                 generateMorphismCode(decl->procedure->local_decls, type, false);
+                 generateMorphismCode(decl->procedure->local_decls, type, false, f_prefix);
               break;
 
          case RULE_DECLARATION:
@@ -280,9 +431,8 @@ static void generateMorphismCode(List *declarations, char type, bool first_call)
 }
 
 
-static void generateProgramCode(GPCommand *command, CommandData data)
+static void generateProgramCode(GPCommand *command, CommandData data, string f_prefix, bool main_p)
 {
-   printf("Generating main code");
    switch(command->type)
    {
       case COMMAND_SEQUENCE:
@@ -292,9 +442,9 @@ static void generateProgramCode(GPCommand *command, CommandData data)
            while(commands != NULL)
            {
               GPCommand *command = commands->command;
-              generateProgramCode(command, new_data);
+              generateProgramCode(command, new_data, f_prefix, main_p);
               if(data.context == LOOP_BODY && commands->next != NULL)
-                 PTFI("if(!success) break;\n\n", data.indent);
+                 PTFI("if(!%ssuccess) break;\n\n", data.indent, f_prefix);
               commands = commands->next;
            }
            break;
@@ -303,7 +453,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
            //Straight forward generation of rule call in either mode
            PTFI("/* Rule Call */\n", data.indent);
            generateRuleCall(command->rule_call.rule_name, command->rule_call.rule->empty_lhs,
-                            command->rule_call.rule->is_predicate, true, data, command->mode);
+                            command->rule_call.rule->is_predicate, true, data, command->mode, f_prefix, main_p);
            break;
 
       case RULE_SET_CALL:
@@ -321,7 +471,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
                 string rule_name = rules->rule_call.rule_name;
                 bool empty_lhs = rules->rule_call.rule->empty_lhs;
                 bool predicate = rules->rule_call.rule->is_predicate;
-                generateRuleCall(rule_name, empty_lhs, predicate, rules->next == NULL, new_data, 'd');
+                generateRuleCall(rule_name, empty_lhs, predicate, rules->next == NULL, new_data, 'd', f_prefix, main_p);
                 rules = rules->next;
              }
              PTFI("} while(false);\n", data.indent);
@@ -367,6 +517,8 @@ static void generateProgramCode(GPCommand *command, CommandData data)
                int i = 0;
                newRules = rules;
                while(newRules != NULL){
+                 PTFI("valid[%d] = false;\n", data.indent, i);
+                 PTFI("weight[%d] = %lf;\n", data.indent, i, newRules->rule_call.rule->weight);
                  string rule_name = newRules->rule_call.rule_name;
                  bool empty_lhs = newRules->rule_call.rule->empty_lhs;
                  if(empty_lhs){
@@ -379,7 +531,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
                  PTFI("totalWeight = totalWeight + weight[%d];\n", data.indent + 3, i);
                  PTFI("someValid = true;\n", data.indent + 3);
                  PTFI("}\n", data.indent);
-                 PTFI("initialiseMorphism(M_%s, host);\n", data.indent, rule_name);
+                 PTFI("initialiseMorphism(M_%s, %shost);\n", data.indent, rule_name, f_prefix);
                  newRules = newRules->next;
                  i = i + 1;
                }
@@ -404,16 +556,14 @@ static void generateProgramCode(GPCommand *command, CommandData data)
                   PTFI("sum = sum + weight[%d];\n", data.indent + 6, i);
                   if(i == 0){
                     PTFI("if(r <= sum){\n", data.indent + 6);
-                    PTFI("printf(\"%s chosen\\n\");\n", data.indent + 9, rule_name);
                     //Never treat as last rule as we know it has a valid match if this code is called
-                    generateRuleCall(rule_name, empty_lhs, predicate, false, new_data, 'w');
+                    generateRuleCall(rule_name, empty_lhs, predicate, false, new_data, 'w', f_prefix, main_p);
                     PTFI("}\n", data.indent + 6);
                   }
                   else{
                     PTFI("if(r <= sum && r > sum - weight[%d]){\n", data.indent + 6, i);
-                    PTFI("printf(\"%s chosen\\n\");\n", data.indent + 9, rule_name);
                     //Never treat as last rule as we know it has a valid match if this code is called
-                    generateRuleCall(rule_name, empty_lhs, predicate, false, new_data, 'w');
+                    generateRuleCall(rule_name, empty_lhs, predicate, false, new_data, 'w', f_prefix, main_p);
                     PTFI("}\n", data.indent + 6);
                   }
                   PTFI("}\n", data.indent + 3);
@@ -422,7 +572,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
                }
 
                PTFI("} else {\n", data.indent);
-               generateFailureCode(NULL, data);
+               generateFailureCode(NULL, data, f_prefix, main_p);
                PTFI("}\n", data.indent);
                PTFI("} while(false);\n", data.indent);
                break;
@@ -435,27 +585,24 @@ static void generateProgramCode(GPCommand *command, CommandData data)
                CommandData new_data = data;
                new_data.indent = data.indent + 3;
                List *rules = command->rule_set;
-               PTFI("printf(\"Empyting Pot\\n\");\n", new_data.indent);
-               PTFI("emptyPot(pot);\n", new_data.indent);
+               PTFI("emptyPot(%spot);\n", new_data.indent, f_prefix);
 
                //Fill pot with all matches
                while(rules != NULL)
                {
                   string rule_name = rules->rule_call.rule_name;
 
-                  PTFI("fillpot%s(pot, M_%s);\n", new_data.indent, rule_name, rule_name);
+                  PTFI("fillpot%s(%spot, M_%s);\n", new_data.indent, rule_name, f_prefix, rule_name);
                   rules = rules->next;
                 }
 
-                PTFI("printf(\"Pot filled.\");\n", new_data.indent);
 
                //If pot is empty generate failure code
-               PTFI("if(potSize(pot) == 0){\n", new_data.indent);
-               generateFailureCode(NULL, new_data);
+               PTFI("if(potSize(%spot) == 0){\n", new_data.indent, f_prefix);
+               generateFailureCode(NULL, new_data, f_prefix, main_p);
                PTFI("} else{\n", new_data.indent);
                //Otherwise draw and execute
-               PTFI("printf(\"Pot size: %%d \\n\", potSize(pot));\n", new_data.indent + 3);
-               PTFI("MorphismHolder *holder = drawFromPot(pot);\n", new_data.indent + 3);
+               PTFI("MorphismHolder *holder = drawFromPot(%spot);\n", new_data.indent + 3, f_prefix);
 
                rules = command->rule_set;
 
@@ -466,9 +613,8 @@ static void generateProgramCode(GPCommand *command, CommandData data)
                    bool empty_lhs = rules->rule_call.rule->empty_lhs;
                    bool predicate = rules->rule_call.rule->is_predicate;
                    PTFI("if(strcmp(holder->ruleName, \"%s\") == 0){\n", new_data.indent + 3, rule_name);
-                   PTFI("printf(\"%s chosen\\n\");\n", new_data.indent + 6, rule_name);
 
-                   PTFI("duplicateMorphism(holder->morphism, M_%s, host);\n", new_data.indent + 6, rule_name);
+                   PTFI("duplicateMorphism(holder->morphism, M_%s, %shost);\n", new_data.indent + 6, rule_name, f_prefix);
                    PTFI("freeMorphism(holder->morphism);\n", new_data.indent + 6);
                    PTFI("free(holder);\n", new_data.indent + 6);
 
@@ -487,12 +633,12 @@ static void generateProgramCode(GPCommand *command, CommandData data)
                          #ifdef GRAPH_TRACING
                             PTFI("print_trace(\"Graph after applying rule %s:\\n\");\n",
                                  data.indent + 3, rule_name);
-                            PTFI("printGraph(host, trace_file);\n\n", new_data.indent + 6);
+                            PTFI("printGraph(%shost, trace_file);\n\n", new_data.indent + 6, f_prefix);
                          #endif
                       }
-                      else PTFI("initialiseMorphism(M_%s, host);\n", new_data.indent + 6, rule_name);
+                      else PTFI("initialiseMorphism(M_%s, %shost);\n", new_data.indent + 6, rule_name, f_prefix);
                    }
-                   PTFI("success = true;\n", new_data.indent + 6);
+                   PTFI("%ssuccess = true;\n", new_data.indent + 6, f_prefix);
                    /* If this rule call is within a rule set, and it is not the last rule in that
                     * set, print a break statement to exit the containing do-while loop of the rule
                     * set call. */
@@ -501,7 +647,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
                    rules = rules->next;
                }
                PTFI("}\n", new_data.indent);
-               PTFI("emptyPot(pot);\n", new_data.indent);
+               PTFI("emptyPot(%spot);\n", new_data.indent, f_prefix);
 
                PTFI("} while(false);\n", data.indent);
                break;
@@ -510,16 +656,16 @@ static void generateProgramCode(GPCommand *command, CommandData data)
       case PROCEDURE_CALL:
       {
            GPProcedure *procedure = command->proc_call.procedure;
-           generateProgramCode(procedure->commands, data);
+           generateProgramCode(procedure->commands, data, f_prefix, main_p);
            break;
       }
       case IF_STATEMENT:
       case TRY_STATEMENT:
-           generateBranchStatement(command, data);
+           generateBranchStatement(command, data, f_prefix, main_p);
            break;
 
       case ALAP_STATEMENT:
-           generateLoopStatement(command, data);
+           generateLoopStatement(command, data, f_prefix, main_p);
            break;
 
       case PROGRAM_OR:
@@ -531,11 +677,11 @@ static void generateProgramCode(GPCommand *command, CommandData data)
            PTFI("int random = rand();\n", data.indent);
            PTFI("if((random %% 2) == 0)\n", data.indent);
            PTFI("{\n", data.indent);
-           generateProgramCode(command->or_stmt.left_command, new_data);
+           generateProgramCode(command->or_stmt.left_command, new_data, f_prefix, main_p);
            PTFI("}\n", data.indent);
            PTFI("else\n", data.indent);
            PTFI("{\n", data.indent);
-           generateProgramCode(command->or_stmt.right_command, new_data);
+           generateProgramCode(command->or_stmt.right_command, new_data, f_prefix, main_p);
            PTFI("}\n", data.indent);
            if(data.context == IF_BODY || data.context == TRY_BODY)
               PTFI("break;\n", data.indent);
@@ -543,12 +689,12 @@ static void generateProgramCode(GPCommand *command, CommandData data)
       }
       case SKIP_STATEMENT:
            PTFI("/* Skip Statement */\n", data.indent);
-           PTFI("success = true;\n", data.indent);
+           PTFI("%ssuccess = true;\n", data.indent, f_prefix);
            break;
 
       case FAIL_STATEMENT:
            PTFI("/* Fail Statement */\n", data.indent);
-           generateFailureCode(NULL, data);
+           generateFailureCode(NULL, data, f_prefix, main_p);
            break;
 
       case BREAK_STATEMENT:
@@ -564,7 +710,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
 		    PTFI("print_trace(\"Old: %%d. New: %%d.\\n\\n\", restore_point%d, "
                          "topOfGraphChangeStack());\n", data.indent, data.restore_point);
 		 #endif
-		 PTFI("if(success) restore_point%d = topOfGraphChangeStack();\n", data.indent,
+		 PTFI("if(%ssuccess) restore_point%d = topOfGraphChangeStack();\n", data.indent, f_prefix,
 		      data.restore_point);
 	      }
               else
@@ -609,7 +755,7 @@ static void generateProgramCode(GPCommand *command, CommandData data)
  *            generation of failure code.
  * data:      CommandData passed from the calling command. */
 static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
-                             bool last_rule, CommandData data, char mode)
+                             bool last_rule, CommandData data, char mode, string f_prefix, bool main_p)
 {
   //Empty LHS has the same execution for prob and deterministic
    if(empty_lhs)
@@ -625,9 +771,9 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
       #ifdef GRAPH_TRACING
          PTFI("print_trace(\"Graph after applying rule %s:\\n\");\n",
               data.indent, rule_name);
-         PTFI("printGraph(host, trace_file);\n\n", data.indent);
+         PTFI("printGraph(%shost, trace_file);\n\n", data.indent, f_prefix);
       #endif
-      PTFI("success = true;\n\n", data.indent);
+      PTFI("%ssuccess = true;\n\n", data.indent, f_prefix);
    }
    else
    {
@@ -656,12 +802,12 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
               #ifdef GRAPH_TRACING
                  PTFI("print_trace(\"Graph after applying rule %s:\\n\");\n",
                       data.indent + 3, rule_name);
-                 PTFI("printGraph(host, trace_file);\n\n", data.indent + 3);
+                 PTFI("printGraph(%shost, trace_file);\n\n", data.indent + 3, f_prefix);
               #endif
            }
-           else PTFI("initialiseMorphism(M_%s, host);\n", data.indent + 3, rule_name);
+           else PTFI("initialiseMorphism(M_%s, %shost);\n", data.indent + 3, rule_name, f_prefix);
         }
-        PTFI("success = true;\n", data.indent + 3);
+        PTFI("%ssuccess = true;\n", data.indent + 3, f_prefix);
         /* If this rule call is within a rule set, and it is not the last rule in that
          * set, print a break statement to exit the containing do-while loop of the rule
          * set call. */
@@ -678,7 +824,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
            #endif
            CommandData new_data = data;
            new_data.indent = data.indent + 3;
-           generateFailureCode(rule_name, new_data);
+           generateFailureCode(rule_name, new_data, f_prefix, main_p);
            PTFI("}\n", data.indent);
         }
         else
@@ -691,14 +837,13 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
     }
    else if (mode == 'w'){
 
-     PTFI("emptyPot(pot);\n", data.indent);
+     PTFI("emptyPot(%spot);\n", data.indent, f_prefix);
 
-     PTFI("fillpot%s(pot, M_%s);\n", data.indent, rule_name, rule_name);
-     PTFI("printf(\"Pot size: %%d \\n\", potSize(pot));\n", data.indent);
+     PTFI("fillpot%s(%spot, M_%s);\n", data.indent, rule_name, f_prefix, rule_name);
 
-     PTFI("if(potSize(pot) > 0){\n", data.indent);
-     PTFI("MorphismHolder *holder = drawFromPot(pot);\n", data.indent + 3);
-     PTFI("duplicateMorphism(holder->morphism, M_%s, host);\n", data.indent + 3, rule_name);
+     PTFI("if(potSize(%spot) > 0){\n", data.indent, f_prefix);
+     PTFI("MorphismHolder *holder = drawFromPot(%spot);\n", data.indent + 3, f_prefix);
+     PTFI("duplicateMorphism(holder->morphism, M_%s, %shost);\n", data.indent + 3, rule_name, f_prefix);
      PTFI("freeMorphism(holder->morphism);\n", data.indent + 3);
      PTFI("free(holder);\n", data.indent + 3);
 
@@ -717,12 +862,12 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
            #ifdef GRAPH_TRACING
               PTFI("print_trace(\"Graph after applying rule %s:\\n\");\n",
                    data.indent + 3, rule_name);
-              PTFI("printGraph(host, trace_file);\n\n", data.indent + 3);
+              PTFI("printGraph(%shost, trace_file);\n\n", data.indent + 3, f_prefix);
            #endif
         }
-        else PTFI("initialiseMorphism(M_%s, host);\n", data.indent + 3, rule_name);
+        else PTFI("initialiseMorphism(M_%s, %shost);\n", data.indent + 3, rule_name, f_prefix);
      }
-     PTFI("success = true;\n", data.indent + 3);
+     PTFI("%ssuccess = true;\n", data.indent + 3, f_prefix);
      /* If this rule call is within a rule set, and it is not the last rule in that
       * set, print a break statement to exit the containing do-while loop of the rule
       * set call. */
@@ -739,7 +884,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
         #endif
         CommandData new_data = data;
         new_data.indent = data.indent + 3;
-        generateFailureCode(rule_name, new_data);
+        generateFailureCode(rule_name, new_data, f_prefix, main_p);
         PTFI("}\n", data.indent);
      }
      else
@@ -749,7 +894,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
                 data.indent, rule_name);
         #endif
      }
-    PTFI("emptyPot(pot);\n", data.indent);
+    PTFI("emptyPot(%spot);\n", data.indent, f_prefix);
    }
  }
 }
@@ -758,7 +903,7 @@ static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
  * generate code for the then and else branches.
  * The flags from the GPCommand structure are used only to generate code for
  * the condition subprogram. */
-static void generateBranchStatement(GPCommand *command, CommandData data)
+static void generateBranchStatement(GPCommand *command, CommandData data, string f_prefix, bool main_p)
 {
    /* Create new CommandData for the branch condition. */
    CommandData condition_data = data;
@@ -805,7 +950,7 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
       #ifdef BACKTRACK_TRACING
          PTFI("print_trace(\"Recording graph changes.\\n\");\n", data.indent);
       #endif
-      if(graph_copying) PTFI("copyGraph(host);\n", data.indent);
+      if(graph_copying) PTFI("copyGraph(%shost);\n", data.indent, f_prefix);
       else
       {
          PTFI("int restore_point%d = graph_change_stack == NULL ? 0 : topOfGraphChangeStack();\n",
@@ -818,17 +963,17 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
    }
    PTFI("do\n", data.indent);
    PTFI("{\n", data.indent);
-   generateProgramCode(command->cond_branch.condition, condition_data);
+   generateProgramCode(command->cond_branch.condition, condition_data,  f_prefix, main_p);
    PTFI("} while(false);\n\n", data.indent);
 
    if(condition_data.context == IF_BODY)
    {
       if(condition_data.restore_point >= 0)
       {
-         if(graph_copying) PTFI("host = popGraphs(%d);\n", data.indent,
-                                condition_data.restore_point);
-         else PTFI("undoChanges(host, restore_point%d);\n", data.indent,
-                   condition_data.restore_point);
+         if(graph_copying) PTFI("%shost = popGraphs(%d);\n", data.indent,
+                                f_prefix, condition_data.restore_point);
+         else PTFI("undoChanges(%shost, restore_point%d);\n", data.indent,
+                   f_prefix, condition_data.restore_point);
          #ifdef BACKTRACK_TRACING
             PTFI("print_trace(\"Undoing graph changes from restore point %d: %%d.\\n\\n\", "
 		 "restore_point%d);\n",
@@ -836,7 +981,8 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
          #endif
          #ifdef GRAPH_TRACING
             PTFI("print_trace(\"Restored graph:\\n\");\n", data.indent);
-            PTFI("printGraph(host, trace_file);\n", data.indent);
+            PTFI("printfGraph(%shost);\n", data.indent, f_prefix);
+            PTFI("printGraph(%shost, trace_file);\n", data.indent, f_prefix);
          #endif
       }
    }
@@ -845,7 +991,7 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
    CommandData new_data = data;
    new_data.indent = data.indent + 3;
    PTFI("/* Then Branch */\n", data.indent);
-   PTFI("if(success)\n", data.indent);
+   PTFI("if(%ssuccess)\n", data.indent, f_prefix);
    PTFI("{\n", data.indent);
    if(condition_data.context == TRY_BODY && condition_data.restore_point >= 0)
    {
@@ -856,7 +1002,7 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
               new_data.indent, condition_data.restore_point, condition_data.restore_point);
       #endif
    }
-   generateProgramCode(command->cond_branch.then_command, new_data);
+   generateProgramCode(command->cond_branch.then_command, new_data, f_prefix, main_p);
    PTFI("}\n", data.indent);
    PTFI("/* Else Branch */\n", data.indent);
    PTFI("else\n", data.indent);
@@ -865,10 +1011,10 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
    {
       if(condition_data.restore_point >= 0)
       {
-         if(graph_copying) PTFI("host = popGraphs(%d);\n", new_data.indent,
-                                condition_data.restore_point);
-         else PTFI("undoChanges(host, restore_point%d);\n", new_data.indent,
-                   condition_data.restore_point);
+         if(graph_copying) PTFI("%shost = popGraphs(%d);\n", new_data.indent,
+                                f_prefix, condition_data.restore_point);
+         else PTFI("undoChanges(%shost, restore_point%d);\n", new_data.indent,
+                   f_prefix, condition_data.restore_point);
          #ifdef BACKTRACK_TRACING
             PTFI("print_trace(\"Undoing graph changes from restore point %d: %%d.\\n\\n\", "
 		 "restore_point%d);\n",
@@ -876,18 +1022,19 @@ static void generateBranchStatement(GPCommand *command, CommandData data)
          #endif
          #ifdef GRAPH_TRACING
             PTFI("print_trace(\"Restored graph:\\n\");\n", new_data.indent);
-            PTFI("printGraph(host, trace_file);\n", new_data.indent);
+            PTFI("printfGraph(%shost);\n", new_data.indent, f_prefix);
+            PTFI("printGraph(%shost, trace_file);\n", new_data.indent, f_prefix);
          #endif
       }
    }
-   PTFI("success = true;\n", new_data.indent); /* Reset success flag before executing else branch. */
-   generateProgramCode(command->cond_branch.else_command, new_data);
+   PTFI("%ssuccess = true;\n", new_data.indent, f_prefix); /* Reset success flag before executing else branch. */
+   generateProgramCode(command->cond_branch.else_command, new_data, f_prefix, main_p);
    PTFI("}\n", data.indent);
    if(data.context == IF_BODY || data.context == TRY_BODY) PTFI("break;\n", data.indent);
    return;
 }
 
-void generateLoopStatement(GPCommand *command, CommandData data)
+void generateLoopStatement(GPCommand *command, CommandData data, string f_prefix, bool main_p)
 {
    /* Check for loop bodies that cause non-termination */
    if(neverFails(command->loop_stmt.loop_body))
@@ -918,7 +1065,7 @@ void generateLoopStatement(GPCommand *command, CommandData data)
       #ifdef BACKTRACK_TRACING
          PTFI("print_trace(\"Recording graph changes.\\n\\n\");\n", data.indent);
       #endif
-      if(graph_copying) PTFI("copyGraph(host);\n", data.indent);
+      if(graph_copying) PTFI("copyGraph(%shost);\n", data.indent, f_prefix);
       else
       {
          PTFI("int restore_point%d = graph_change_stack == NULL ? 0 : topOfGraphChangeStack();\n",
@@ -929,9 +1076,9 @@ void generateLoopStatement(GPCommand *command, CommandData data)
          #endif
       }
    }
-   PTFI("while(success)\n", data.indent);
+   PTFI("while(%ssuccess)\n", data.indent, f_prefix);
    PTFI("{\n", data.indent);
-   generateProgramCode(command->loop_stmt.loop_body, loop_data);
+   generateProgramCode(command->loop_stmt.loop_body, loop_data, f_prefix, main_p);
    if(loop_data.restore_point >= 0)
    {
       if(loop_data.loop_depth > 1)
@@ -943,7 +1090,7 @@ void generateLoopStatement(GPCommand *command, CommandData data)
             PTFI("print_trace(\"Old: %%d. New: %%d.\\n\\n\", restore_point%d, "
                  "topOfGraphChangeStack());\n", data.indent + 3, loop_data.restore_point);
 	 #endif
-	 PTFI("if(success) restore_point%d = topOfGraphChangeStack();\n", data.indent + 3,
+	 PTFI("if(%ssuccess) restore_point%d = topOfGraphChangeStack();\n", data.indent + 3, f_prefix,
               loop_data.restore_point);
       }
       else
@@ -953,7 +1100,7 @@ void generateLoopStatement(GPCommand *command, CommandData data)
 	      data.indent + 3);
 	 if(graph_copying)
 	 {
-	    PTFI("if(success)\n", data.indent + 3);
+	    PTFI("if(%ssuccess)\n", data.indent + 3, f_prefix);
 	    PTFI("{\n", data.indent + 3);
 	    PTFI("Graph *copy = popGraphs(%d);\n", data.indent + 6, loop_data.restore_point);
 	    PTFI("freeGraph(copy);\n", data.indent + 6);
@@ -961,8 +1108,8 @@ void generateLoopStatement(GPCommand *command, CommandData data)
 	 }
 	 else
          {
-	    PTFI("if(success) discardChanges(restore_point%d);\n",
-	         data.indent + 3, loop_data.restore_point);
+	    PTFI("if(%ssuccess) discardChanges(restore_point%d);\n",
+	         data.indent + 3, f_prefix, loop_data.restore_point);
             #ifdef BACKTRACK_TRACING
 	         PTFI("print_trace(\"Discarding graph changes.\\n\");\n", data.indent + 3);
 	         PTFI("print_trace(\"New restore point %d: %%d.\\n\\n\", restore_point%d);\n",
@@ -972,7 +1119,7 @@ void generateLoopStatement(GPCommand *command, CommandData data)
       }
    }
    PTFI("}\n", data.indent);
-   PTFI("success = true;\n", data.indent);
+   PTFI("%ssuccess = true;\n", data.indent, f_prefix);
 }
 
 /* Generates code to handle failure, which is context-dependent. There are two
@@ -981,7 +1128,7 @@ void generateLoopStatement(GPCommand *command, CommandData data)
  *     argument.
  * (2) The fail statement is called. NULL is passed as the first argument. */
 
-static void generateFailureCode(string rule_name, CommandData data)
+static void generateFailureCode(string rule_name, CommandData data, string f_prefix, bool main_p)
 {
    /* A failure in the main body ends the execution. Emit code to report the
     * failure, garbage collect and return 0. */
@@ -989,36 +1136,50 @@ static void generateFailureCode(string rule_name, CommandData data)
    {
       #ifdef GRAPH_TRACING
          PTFI("print_trace(\"Program failed. Final graph:\\n\");\n", data.indent);
-         PTFI("printGraph(host, trace_file);\n", data.indent);
+         PTFI("printfGraph(%shost);\n", data.indent, f_prefix);
+         PTFI("printGraph(%shost, trace_file);\n", data.indent, f_prefix);
       #endif
-      if(rule_name != NULL)
-         PTFI("fprintf(output_file, \"No output graph: rule %s not applicable.\\n\");\n",
-              data.indent, rule_name);
-      else PTFI("fprintf(output_file, \"No output graph: Fail statement invoked\\n\");\n",
-                data.indent);
-      PTFI("printf(\"Output information saved to file gp2.output\\n\");\n", data.indent);
-      PTFI("garbageCollect();\n", data.indent);
+      if(main_p){
+        if(rule_name != NULL)
+           PTFI("fprintf(output_file, \"No output graph: rule %s not applicable.\\n\");\n",
+                data.indent, rule_name);
+        else PTFI("fprintf(output_file, \"No output graph: Fail statement invoked\\n\");\n",
+                  data.indent);
+        PTFI("printf(\"Output information saved to file gp2.output\\n\");\n", data.indent);
+      }
+      else{
+        if(rule_name != NULL)
+           PTFI("printf(\"No output graph: rule %s not applicable.\\n\");\n",
+                data.indent, rule_name);
+        else PTFI("printf(\"No output graph: Fail statement invoked\\n\");\n",
+                  data.indent);
+      }
+      PTFI("%sgarbageCollect();\n", data.indent, f_prefix);
       //PTFI("printf(\"Graph changes recorded: %%d\\n\", graph_change_count);\n", data.indent);
-      PTFI("fclose(output_file);\n", data.indent);
+      if(main_p){
+        PTFI("fclose(output_file);\n", data.indent);
+      }
       PTFI("return 0;\n", data.indent);
    }
    /* In other contexts, set the runtime success flag to false. */
-   else PTFI("success = false;\n", data.indent);
+   else PTFI("%ssuccess = false;\n", data.indent, f_prefix);
 
    if(data.context == IF_BODY || data.context == TRY_BODY) PTFI("break;\n", data.indent);
    if(data.context == LOOP_BODY)
    {
       if(data.restore_point >= 0)
       {
-         if(graph_copying) PTFI("host = popGraphs(%d);\n", data.indent, data.restore_point);
-         else PTFI("undoChanges(host, restore_point%d);\n", data.indent, data.restore_point);
+         if(graph_copying) PTFI("%shost = popGraphs(%d);\n", data.indent, f_prefix, data.restore_point);
+        else{
+          PTFI("undoChanges(%shost, restore_point%d);\n", data.indent, f_prefix, data.restore_point);}
          #ifdef BACKTRACK_TRACING
             PTFI("print_trace(\"Undoing graph changes from restore point %d: %%d\\n\\n\", "
 		 "restore_point%d);\n", data.indent, data.restore_point, data.restore_point);
          #endif
          #ifdef GRAPH_TRACING
             PTFI("print_trace(\"Restored graph:\\n\");\n", data.indent);
-            PTFI("printGraph(host, trace_file);\n", data.indent);
+            PTFI("printfGraph(%shost);\n", data.indent, f_prefix);
+            PTFI("printGraph(%shost, trace_file);\n", data.indent, f_prefix);
          #endif
       }
    }

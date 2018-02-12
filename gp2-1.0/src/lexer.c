@@ -383,8 +383,8 @@ static void yynoreturn yy_fatal_error (yyconst char* msg  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 74
-#define YY_END_OF_BUFFER 75
+#define YY_NUM_RULES 75
+#define YY_END_OF_BUFFER 76
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -394,47 +394,47 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[381] =
     {   0,
-        0,    0,    0,    0,    7,    7,   75,   73,   71,   72,
-       51,    5,   61,   42,   43,   56,   54,   49,   55,   52,
-       57,   68,   53,   50,   59,   60,   58,   69,   69,   46,
-       47,   70,   70,   70,   70,   70,   70,   70,   70,   70,
-       70,   70,   70,   70,   70,   70,   70,   70,   44,   48,
-       45,    3,    2,   74,    8,    7,    6,   71,   65,    4,
-        0,    0,    0,    0,   41,    1,   68,   67,   62,   66,
-       69,   69,   70,   70,   70,   70,   70,   70,   70,   70,
-       70,   70,   70,   70,   10,   70,   70,   70,   70,   70,
-       19,   70,   70,   70,   70,   70,   70,   70,   70,   70,
+        0,    0,    0,    0,    7,    7,   76,   74,   72,   73,
+       52,    5,   62,   43,   44,   57,   55,   50,   56,   53,
+       58,   69,   54,   51,   60,   61,   59,   70,   70,   47,
+       48,   71,   71,   71,   71,   71,   71,   71,   71,   71,
+       71,   71,   71,   71,   71,   71,   71,   71,   45,   49,
+       46,    3,    2,   75,    8,    7,    6,   72,   66,    4,
+        0,    0,    0,    0,   42,    1,   69,   68,   63,   67,
+       70,   70,   71,   71,   71,   71,   71,   71,   71,   71,
+       71,   71,   71,   71,   10,   71,   71,   71,   71,   71,
+       19,   71,   71,   71,   71,   71,   71,   71,   71,   71,
 
-        3,    7,   64,   63,    0,   69,   69,   70,   18,   35,
-       70,   70,   70,   70,   70,   70,   70,   70,   70,   70,
-       70,   36,   70,   70,   70,   20,   70,   30,   70,   70,
-       70,   70,   11,   70,   70,    7,    0,   41,   69,    9,
-       70,   39,   32,   70,   37,   70,   21,   13,   70,   15,
-       70,   33,   70,   70,   70,   70,   40,   70,   14,   70,
-       70,   12,   70,   70,    7,   69,   70,   16,   70,   25,
-       31,   22,   70,   70,   70,   70,   70,   70,   70,   17,
-        7,   69,   70,   34,   70,   70,   26,   23,   38,   70,
-       70,    7,   69,   70,   70,   70,   70,   70,    7,   69,
+        3,    7,   65,   64,    0,   70,   70,   71,   18,   36,
+       71,   71,   71,   71,   71,   71,   71,   71,   71,   71,
+       71,   37,   71,   71,   71,   20,   71,   31,   71,   71,
+       71,   71,   11,   71,   71,    7,    0,   42,   70,    9,
+       71,   40,   33,   71,   38,   71,   21,   13,   71,   15,
+       71,   34,   71,   71,   71,   71,   41,   71,   14,   71,
+       71,   12,   71,   71,    7,   70,   71,   16,   71,   26,
+       32,   22,   71,   71,   71,   71,   71,   71,   71,   17,
+        7,   70,   71,   35,   71,   71,   27,   23,   39,   71,
+       25,    7,   70,   71,   71,   71,   71,   71,    7,   70,
 
-       70,   70,   70,   70,   70,    7,   69,   70,   24,   70,
-       70,   27,    7,   69,   70,   29,   28,    7,   69,   70,
-        7,   69,   70,    7,   69,   70,    7,   69,   70,    7,
-       69,   70,    7,   69,   70,    7,   69,   70,    7,   69,
-       70,    7,   69,   70,    7,   69,   70,    7,   69,   70,
-        7,   69,   70,    7,   69,   70,    7,   69,   70,    7,
-       69,   70,    7,   69,   70,    7,   69,   70,    7,   69,
-       70,    7,   69,   70,    7,   69,   70,    7,   69,   70,
-        7,   69,   70,    7,   69,   70,    7,   69,   70,    7,
-       69,   70,    7,   69,   70,    7,   69,   70,    7,   69,
+       71,   71,   71,   71,   71,    7,   70,   71,   24,   71,
+       71,   28,    7,   70,   71,   30,   29,    7,   70,   71,
+        7,   70,   71,    7,   70,   71,    7,   70,   71,    7,
+       70,   71,    7,   70,   71,    7,   70,   71,    7,   70,
+       71,    7,   70,   71,    7,   70,   71,    7,   70,   71,
+        7,   70,   71,    7,   70,   71,    7,   70,   71,    7,
+       70,   71,    7,   70,   71,    7,   70,   71,    7,   70,
+       71,    7,   70,   71,    7,   70,   71,    7,   70,   71,
+        7,   70,   71,    7,   70,   71,    7,   70,   71,    7,
+       70,   71,    7,   70,   71,    7,   70,   71,    7,   70,
 
-       70,    7,   69,   70,    7,   69,   70,    7,   69,   70,
-        7,   69,   70,    7,   69,   70,    7,   69,   70,    7,
-       69,   70,    7,   69,   70,    7,   69,   70,    7,   69,
-       70,    7,   69,   70,    7,   69,   70,    7,   69,   70,
-        7,   69,   70,    7,   69,   70,    7,   69,   70,    7,
-       69,   70,    7,   69,   70,    7,   69,   70,    7,   69,
-       70,    7,   69,   70,    7,   69,   70,    7,   69,   70,
-        7,   69,   70,    7,   69,   70,    7,   69,   70,    0
+       71,    7,   70,   71,    7,   70,   71,    7,   70,   71,
+        7,   70,   71,    7,   70,   71,    7,   70,   71,    7,
+       70,   71,    7,   70,   71,    7,   70,   71,    7,   70,
+       71,    7,   70,   71,    7,   70,   71,    7,   70,   71,
+        7,   70,   71,    7,   70,   71,    7,   70,   71,    7,
+       70,   71,    7,   70,   71,    7,   70,   71,    7,   70,
+       71,    7,   70,   71,    7,   70,   71,    7,   70,   71,
+        7,   70,   71,    7,   70,   71,    7,   70,   71,    0
     } ;
 
 static yyconst YY_CHAR yy_ec[256] =
@@ -740,12 +740,12 @@ static yyconst flex_int16_t yy_chk[535] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static yyconst flex_int32_t yy_rule_can_match_eol[75] =
+static yyconst flex_int32_t yy_rule_can_match_eol[76] =
     {   0,
 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,     };
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,     };
 
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
@@ -1273,94 +1273,97 @@ return INTERFACE;
 case 25:
 YY_RULE_SETUP
 #line 130 "lexer.l"
-return _EMPTY;
+return WEIGHT;
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
 #line 131 "lexer.l"
-return _LENGTH;
+return _EMPTY;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
 #line 132 "lexer.l"
-return WEIGHTED;
+return _LENGTH;
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
 #line 133 "lexer.l"
-return SWEIGHTED;
+return WEIGHTED;
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
 #line 134 "lexer.l"
+return SWEIGHTED;
+	YY_BREAK
+case 30:
+YY_RULE_SETUP
+#line 135 "lexer.l"
 return JWEIGHTED;
 	YY_BREAK
 /* Keywords for node and edge marks */
-case 30:
-YY_RULE_SETUP
-#line 137 "lexer.l"
-{ yylval.mark = RED; return MARK; }
-	YY_BREAK
 case 31:
 YY_RULE_SETUP
 #line 138 "lexer.l"
-{ yylval.mark = GREEN; return MARK; }
+{ yylval.mark = RED; return MARK; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
 #line 139 "lexer.l"
-{ yylval.mark = BLUE; return MARK; }
+{ yylval.mark = GREEN; return MARK; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
 #line 140 "lexer.l"
-{ yylval.mark = GREY; return MARK; }
+{ yylval.mark = BLUE; return MARK; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
 #line 141 "lexer.l"
+{ yylval.mark = GREY; return MARK; }
+	YY_BREAK
+case 35:
+YY_RULE_SETUP
+#line 142 "lexer.l"
 { yylval.mark = DASHED; return MARK; }
 	YY_BREAK
 /* Any has a distinct token since it cannot appear in the host graph and
     therefore must be distinguished from the other marks. */
-case 35:
+case 36:
 YY_RULE_SETUP
-#line 144 "lexer.l"
+#line 145 "lexer.l"
 { yylval.mark = ANY; return ANY_MARK; }
 	YY_BREAK
 /* Keywords for GP2 types */
-case 36:
-YY_RULE_SETUP
-#line 147 "lexer.l"
-return INT;
-	YY_BREAK
 case 37:
 YY_RULE_SETUP
 #line 148 "lexer.l"
-return CHARACTER;
+return INT;
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
 #line 149 "lexer.l"
-return STRING;
+return CHARACTER;
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
 #line 150 "lexer.l"
-return ATOM;
+return STRING;
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
 #line 151 "lexer.l"
-return LIST;
+return ATOM;
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 153 "lexer.l"
-{ yylval.dnum = atof(yytext); return DNUM; }
+#line 152 "lexer.l"
+return LIST;
 	YY_BREAK
 case 42:
-#line 156 "lexer.l"
+YY_RULE_SETUP
+#line 154 "lexer.l"
+{ yylval.dnum = atof(yytext); return DNUM; }
+	YY_BREAK
 case 43:
 #line 157 "lexer.l"
 case 44:
@@ -1398,86 +1401,88 @@ case 59:
 case 60:
 #line 174 "lexer.l"
 case 61:
-YY_RULE_SETUP
-#line 174 "lexer.l"
-return yytext[0];
-	YY_BREAK
+#line 175 "lexer.l"
 case 62:
 YY_RULE_SETUP
-#line 176 "lexer.l"
-return ARROW;
+#line 175 "lexer.l"
+return yytext[0];
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
 #line 177 "lexer.l"
-return ROOT;
+return ARROW;
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
 #line 178 "lexer.l"
-return BIDIRECTIONAL;
+return ROOT;
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
 #line 179 "lexer.l"
-return NEQ;
+return BIDIRECTIONAL;
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
 #line 180 "lexer.l"
-return GTEQ;
+return NEQ;
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
 #line 181 "lexer.l"
-return LTEQ;
+return GTEQ;
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 183 "lexer.l"
+#line 182 "lexer.l"
+return LTEQ;
+	YY_BREAK
+case 69:
+YY_RULE_SETUP
+#line 184 "lexer.l"
 { yylval.num = atoi(yytext); return NUM; }
 	YY_BREAK
 /* Procedure identifiers must start with a capital letter.
   * All other identifiers start with a lowercase letter.
   * Identifier names are retained with strdup which itself calls malloc,
   * so these strings need to be explicitly freed. */
-case 69:
-YY_RULE_SETUP
-#line 189 "lexer.l"
-{ yylval.id = strdup(yytext); return PROCID; } /* other characters may be allowed. */
-	YY_BREAK
 case 70:
 YY_RULE_SETUP
 #line 190 "lexer.l"
-{ yylval.id = strdup(yytext); return ID; }
+{ yylval.id = strdup(yytext); return PROCID; } /* other characters may be allowed. */
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 192 "lexer.l"
-/* ignore white space */
+#line 191 "lexer.l"
+{ yylval.id = strdup(yytext); return ID; }
 	YY_BREAK
 case 72:
-/* rule 72 can match eol */
 YY_RULE_SETUP
 #line 193 "lexer.l"
+/* ignore white space */
+	YY_BREAK
+case 73:
+/* rule 73 can match eol */
+YY_RULE_SETUP
+#line 194 "lexer.l"
 { yycolumn = 1; }  /* reset yycolumn on newline */
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 194 "lexer.l"
-{ return 0; }
-	YY_BREAK
-case 73:
-YY_RULE_SETUP
 #line 195 "lexer.l"
-{ print_to_console("Error: Invalid symbol '%c'\n", yytext[0]);
-			return 0; }
+{ return 0; }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 199 "lexer.l"
+#line 196 "lexer.l"
+{ print_to_console("Error: Invalid symbol '%c'\n", yytext[0]);
+			return 0; }
+	YY_BREAK
+case 75:
+YY_RULE_SETUP
+#line 200 "lexer.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1481 "lexer.c"
+#line 1486 "lexer.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2447,7 +2452,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 199 "lexer.l"
+#line 200 "lexer.l"
 
 
 
