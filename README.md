@@ -1,13 +1,13 @@
 
-About GP 2
+##About GP 2
 
 GP 2 (Graph Programs 2) is a rule-based, nondeterministic programming language for solving graph problems at a high level of abstraction, freeing programmers from handling low-level data structures. The core of GP 2 consists of four constructs: single-step application of a set of conditional graph-transformation rules, sequential composition, branching and iteration. The language has a small structural operational semantics and a visual editor for writing GP 2 programs, running them, and tracing their execution.
 
-About Probabilistic GP 2
+##Probabilistic GP 2
 
 Probabilistic GP 2 is an extension of GP 2 that allows the programmer to specify that certain rule-sets should be executed probabilistically. This may be helpful when correctness of a graph program cannot be shown through conventional confluence analysis. It also allows the design of probabilistic graph programs such as randomized algorithms and meta-heuristics.
 
-The GP 2 Compiler
+##The GP 2 Compiler
 
 The GP 2 compiler translates a GP 2 program into executable C code. The generated code is executable with the support of the GP 2 library.
 
@@ -40,7 +40,7 @@ Run gp2 -r <rule_file> to validate a rule.
 Run gp2 -h <host_file> to validate a host graph.
 
 
-Build
+##Build
 
 Build a GP 2 distribution as follows:
 
@@ -56,7 +56,7 @@ Build a GP 2 distribution as follows:
 
 This will generate a distribution zip (default name: gp2-1.0.tar.gz) which will contain a GP 2 distribution ready to install.
 
-Installation
+##Installation
 
 Superusers install a GP 2 disribution as follows:
 
@@ -80,7 +80,7 @@ This command will install files into the following directories: * {dest-dir}/bin
 
 Call the compiler with -l {dest-dir} to ensure that the generated code compiles.
 
-Authors
+###Authors
 
 The GP 2 language was designed by Detlef Plump.
 
