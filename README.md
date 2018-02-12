@@ -11,9 +11,9 @@ Probabilistic GP 2 is an extension of GP 2 that allows the programmer to specify
 
 The GP 2 compiler translates a GP 2 program into executable C code. The generated code is executable with the support of the GP 2 library.
 
-Default usage: gp2 [-c] [-d] [-l <rootdir>] [-o <outdir>] <gp2-program_file>
+Default usage: gp2 [-c] [-d] [-l <rootdir>] [-o <outdir>] [-m <program name>] <gp2-program_file>
 
-Compiles _gp2-program_ into C code. The generated code is placed in _/tmp/gp2_ unless an alternate location is specified with the -O flag.
+Compiles _gp2-program_ into C code. The generated code is placed in _/tmp/gp2_ unless an alternate location is specified with the -o flag.
 
 To execute the generated code, run make and ./gp2run <host-graph-file> from _/tmp/gp2_.
 
