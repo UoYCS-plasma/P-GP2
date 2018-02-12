@@ -298,7 +298,7 @@ Block: '(' ComSeq ')' 	                { $$ = newASTCommandSequence(@$, $2); }
      | BREAK				{ $$ = newASTBreak(@$); }
 
 SimpleCommand: RuleSetCall 	        { $$ = newASTRuleSetCall(@$, $1); }
-              | SWeightedRuleSetCall 	        { $$ = newASTSeparateWeightedRuleSetCall(@$, $2); }
+              | SWeightedRuleSetCall 	        { $$ = newASTSeparateWeightedRuleSetCall(@$, $1); }
               | JWEIGHTED RuleSetCall 	        { $$ = newASTJoinedWeightedRuleSetCall(@$, $2); }
              | RuleID                   { $$ = newASTRuleCall(@$, $1); if($1) free($1); }
             | '[' RuleID ']'                  { $$ = newASTWeightedRuleCall(@$, $2); if($2) free($2); }
