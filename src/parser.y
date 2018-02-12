@@ -126,7 +126,7 @@ bool syntax_error = false;
   int check_type; /* enum CondExpType */
 }
 
-%type <list> Program LocalDecls ComSeq RuleSetCall IDList VarDecls
+%type <list> Program LocalDecls ComSeq RuleSetCall SWeightedRuleSetCall IDList VarDecls
              VarList Inter Weight NodeIDList NodeList EdgeList List
 %type <decl> Declaration
 %type <command> MainDecl Command Block SimpleCommand
@@ -298,16 +298,21 @@ Block: '(' ComSeq ')' 	                { $$ = newASTCommandSequence(@$, $2); }
      | BREAK				{ $$ = newASTBreak(@$); }
 
 SimpleCommand: RuleSetCall 	        { $$ = newASTRuleSetCall(@$, $1); }
-              | SWEIGHTED RuleSetCall 	        { $$ = newASTSeparateWeightedRuleSetCall(@$, $2); }
+              | SWeightedRuleSetCall 	        { $$ = newASTSeparateWeightedRuleSetCall(@$, $2); }
               | JWEIGHTED RuleSetCall 	        { $$ = newASTJoinedWeightedRuleSetCall(@$, $2); }
              | RuleID                   { $$ = newASTRuleCall(@$, $1); if($1) free($1); }
-            | WEIGHTED RuleID                   { $$ = newASTWeightedRuleCall(@$, $2); if($2) free($2); }
+            | '[' RuleID ']'                  { $$ = newASTWeightedRuleCall(@$, $2); if($2) free($2); }
 	     | ProcID	 		{ $$ = newASTProcCall(@$, $1); if($1) free($1); }
 
 RuleSetCall: '{' IDList '}'		{ $$ = $2; }
            /* If an error is found in an rule set call, continue parsing after
             * the rule set. */
            | error '}' 			{ $$ = NULL; }
+
+SWeightedRuleSetCall: '[' IDList ']'		{ $$ = $2; }
+          /* If an error is found in an rule set call, continue parsing after
+           * the rule set. */
+          | error ']' 			{ $$ = NULL; }
 
 IDList: RuleID				{ $$ = addASTRule(@1, $1, NULL);
 					  if($1) free($1); }
@@ -333,11 +338,11 @@ RuleDecl: RuleID '(' VarDecls ')' Graph ARROW Graph Inter CondDecl
         | RuleID '(' ')' Graph ARROW Graph Inter CondDecl
       					{ $$ = newASTRule(@1, $1, NULL, $4, $6, $7, $8);
 					  if($1) free($1); }
-        | RuleID '(' VarDecls ')' Graph ARROW Graph Inter CondDecl WEIGHT '=' DNUM
-            					{ $$ = newASTWeightedRule(@1, $1, $3, $5, $7, $8, $9, $12);
+        | RuleID '(' VarDecls ')' '[' DNUM ']' Graph ARROW Graph Inter CondDecl
+            					{ $$ = newASTWeightedRule(@1, $1, $3, $8, $10, $11, $12, $6);
             					  if($1) free($1); }
-        | RuleID '(' ')' Graph ARROW Graph Inter CondDecl WEIGHT '=' DNUM
-      					{ $$ = newASTWeightedRule(@1, $1, NULL, $4, $6, $7, $8, $11);
+        | RuleID '(' ')' '[' DNUM ']' Graph ARROW Graph Inter CondDecl
+      					{ $$ = newASTWeightedRule(@1, $1, NULL, $7, $9, $10, $11, $5);
 					  if($1) free($1); }
         /* Error-catching productions */
 	| ProcID '(' VarDecls ')' Graph ARROW Graph Inter CondDecl
