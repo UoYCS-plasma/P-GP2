@@ -88,7 +88,7 @@ bool syntax_error = false;
 %token WHERE EDGETEST
 %token INDEG OUTDEG _LENGTH
 %token INT CHARACTER STRING ATOM LIST
-%token INTERFACE _EMPTY INJECTIVE WEIGHT
+%token INTERFACE _EMPTY INJECTIVE
 %token <mark> MARK ANY_MARK
 %token ARROW
 %token NEQ GTEQ LTEQ
@@ -127,7 +127,7 @@ bool syntax_error = false;
 }
 
 %type <list> Program LocalDecls ComSeq RuleSetCall SWeightedRuleSetCall IDList VarDecls
-             VarList Inter Weight NodeIDList NodeList EdgeList List
+             VarList Inter NodeIDList NodeList EdgeList List
 %type <decl> Declaration
 %type <command> MainDecl Command Block SimpleCommand
 %type <proc> ProcDecl
