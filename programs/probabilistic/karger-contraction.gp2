@@ -101,7 +101,7 @@ cleanup(
 ]
 =>
 [
-	(n0, x#red)
+	(n0, x)
 	|
 ]
 interface = {
