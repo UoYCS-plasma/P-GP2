@@ -1,4 +1,4 @@
-Main = (three_node; [pick_edge]; delete_edge!; redirect_edge; cleanup)!
+Main = (three_node; [pick_edge]; delete_edge!; redirect_edge!; cleanup)!
 
 three_node
 (
