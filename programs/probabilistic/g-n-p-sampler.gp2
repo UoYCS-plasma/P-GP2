@@ -1,6 +1,6 @@
-Main = (pickEdge; [deleteEdge, keepEdge])!; unmarkEdge!
+Main = (pick_edge; [delete_edge, keep_edge])!; unmark_edge!
 
-pickEdge
+pick_edge
 (
 	a, b, c : list
 )
@@ -23,7 +23,7 @@ interface = {
 	n0, n1
 }
 
-deleteEdge
+delete_edge
 (
 	a, b, c : list
 )
@@ -45,7 +45,7 @@ interface = {
 	n0, n1
 }
 
-keepEdge
+keep_edge
 (
 	a, b, c : list
 )
@@ -69,7 +69,7 @@ interface = {
 	n0, n1
 }
 
-unmarkEdge
+unmark_edge
 (
 	a, b, c : list
 )

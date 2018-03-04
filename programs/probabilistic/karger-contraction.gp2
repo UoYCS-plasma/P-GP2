@@ -1,6 +1,6 @@
-Main = (three-node; [pick-edge]; delete-edge!; redirect-edge; cleanup)!
+Main = (three_node; [pick_edge]; delete_edge!; redirect_edge; cleanup)!
 
-three-node
+three_node
 (
 	x, y, z : list
 )
@@ -19,7 +19,7 @@ interface = {
 	n0, n1, n2
 }
 
-pick-edge
+pick_edge
 (
 	x, y : list;
 	n : int
@@ -41,9 +41,9 @@ interface = {
 	n0, n1
 }
 
-delete-edge
+delete_edge
 (
-	x, y : list
+	x, y : list;
 	n : int
 )
 [
@@ -63,7 +63,7 @@ interface = {
 	n0, n1
 }
 
-redirect-edge
+redirect_edge
 (
 	x, y, z : list;
 	n : int
