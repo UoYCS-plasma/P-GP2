@@ -506,13 +506,6 @@ static void generateProgramCode(GPCommand *command, CommandData data, string f_p
                //Boolean to check if there is *some* valid match
                PTFI("bool someValid = false;\n", data.indent);
 
-
-               //Initialise arrays
-               for(int i = 0; i < count; i++){
-                 PTFI("valid[%d] = false;\n", data.indent, i);
-                 PTFI("weight[%d] = 1.0;\n", data.indent, i);
-               }
-
                //Establish which are valid
                int i = 0;
                newRules = rules;

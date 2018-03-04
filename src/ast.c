@@ -563,7 +563,7 @@ GPRule *newASTRule(YYLTYPE location, string name, List *variables,
     rule->predicate_count = 0;
     rule->empty_lhs = false;
     rule->is_predicate = false;
-    rule->weight = 0.0;
+    rule->weight = 1.0;
     return rule;
 }
 
