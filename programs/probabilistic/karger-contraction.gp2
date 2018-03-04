@@ -8,12 +8,14 @@ three_node
 	(n0, x)
 	(n1, y)
 	(n2, z)
+	|
 ]
 =>
 [
 	(n0, x)
 	(n1, y)
 	(n2, z)
+	|
 ]
 interface = {
 	n0, n1, n2
