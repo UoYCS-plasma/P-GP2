@@ -1,0 +1,109 @@
+Main = (three_node; [pick_edge]; delete_edge!; redirect_edge!; cleanup)!
+
+three_node
+(
+	x, y, z : list
+)
+[
+	(n0, x)
+	(n1, y)
+	(n2, z)
+	|
+]
+=>
+[
+	(n0, x)
+	(n1, y)
+	(n2, z)
+	|
+]
+interface = {
+	n0, n1, n2
+}
+
+pick_edge
+(
+	x, y : list;
+	n : int
+)
+[
+	(n0, x)
+	(n1, y)
+	|
+	(e0, n0, n1, n)
+]
+=>
+[
+	(n0(R), x#red)
+	(n1(R), y#blue)
+	|
+	(e0, n0, n1, n)
+]
+interface = {
+	n0, n1
+}
+
+delete_edge
+(
+	x, y : list;
+	n : int
+)
+[
+	(n0(R), x#red)
+	(n1(R), y#blue)
+	|
+	(e0, n0, n1, n)
+	(e0, n1, n0, n)
+]
+=>
+[
+	(n0(R), x#red)
+	(n1(R), y#blue)
+	|
+]
+interface = {
+	n0, n1
+}
+
+redirect_edge
+(
+	x, y, z : list;
+	n : int
+)
+[
+	(n0(R), x#red)
+	(n1(R), y#blue)
+	(n2, z)
+	|
+	(e0, n2, n1, n)
+	(e0, n1, n2, n)
+]
+=>
+[
+	(n0(R), x#red)
+	(n1(R), y#blue)
+	(n2, z)
+	|
+	(e0, n2, n0, n)
+	(e0, n0, n2, n)
+]
+interface = {
+	n0, n1, n2
+}
+
+cleanup(
+	x, y : list
+)
+[
+	(n0(R), x#red)
+	(n1(R), y#blue)
+	|
+]
+=>
+[
+	(n0, x)
+	|
+]
+interface = {
+	n0
+}
