@@ -961,7 +961,7 @@ void generateRemoveLHSCode(string rule_name, string f_prefix)
    PTFI("Edge *edge = getEdge(%shost, morphism->edge_map[count].host_index);\n", 9, f_prefix);
    PTFI("/* A hole is created if the edge is not at the right-most index of the array. */\n", 9);
    PTFI("pushRemovedEdge(edge->label, edge->source, edge->target, edge->index,\n", 9);
-   PTFI("                edge->index < host->edges.size - 1);\n", 9);
+   PTFI("                edge->index < %shost->edges.size - 1);\n", 9, f_prefix);
    PTFI("}\n", 6);
    PTFI("removeEdge(%shost, morphism->edge_map[count].host_index);\n", 6, f_prefix);
    PTFI("}\n", 3);
