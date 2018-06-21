@@ -35,7 +35,7 @@ Options:
 
 -o - Specify directory for generated code and program output.
 
--o - Specify a program name. If this argument is supplied, all variable names will be prefixed with the given name and, instead of a executable program, a library will be generated where a apply_[program name] function can be used to apply the program to a GP 2 host graph. Helpful for intergrating a program with other c code.
+-m - Specify a program name. If this argument is supplied, all variable names will be prefixed with the given name and, instead of a executable program, a library will be generated where a apply_[program name] function can be used to apply the program to a GP 2 host graph. Helpful for intergrating a program with other c code.
 
 The compiler can also be used to validate GP 2 source files.
 
