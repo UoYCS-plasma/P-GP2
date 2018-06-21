@@ -7,6 +7,12 @@ GP 2 (Graph Programs 2) is a rule-based, nondeterministic programming language f
 
 Probabilistic GP 2 is an extension of GP 2 that allows the programmer to specify that certain rule-sets should be executed probabilistically. This may be helpful when correctness of a graph program cannot be shown through conventional confluence analysis. It also allows the design of probabilistic graph programs such as randomized algorithms and meta-heuristics.
 
+You can read about P-GP 2 in our paper at ICGT 2018:
+
+[Probabilistic Graph Programs for Randomized and Evolutionary Algorithms](https://link.springer.com/chapter/10.1007%2F978-3-319-92991-0_5). 
+
+In it we describe the syntax of P-GP 2 and 3 motivating case studies taking from graph theory and meta-heuristics.
+
 ## The GP 2 Compiler
 
 The GP 2 compiler translates a GP 2 program into executable C code. The generated code is executable with the support of the GP 2 library.
