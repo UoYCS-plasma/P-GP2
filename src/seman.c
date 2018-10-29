@@ -1144,6 +1144,34 @@ void atomScan(GPAtom *atom, List *interface, string scope, string rule_name,
            atomScan(atom->bin_op.right_exp, interface, scope, rule_name,
                     location, true, false);
            break;
+      case RAND_INT:
+           if(string_exp)
+           {
+              print_error("Error (%s): Arithmetic operator appears in string "
+                          "expression.\n", rule_name);
+              abort_compilation = true;
+           }
+           if(location == 'l') lhs_not_simple = true;
+           atomScan(atom->rand_op.left_exp, interface, scope, rule_name,
+                    location, true, false);
+           atomScan(atom->rand_op.right_exp, interface, scope, rule_name,
+                    location, true, false);
+           break;
+      case BOUND:
+           if(string_exp)
+           {
+              print_error("Error (%s): Arithmetic operator appears in string "
+                          "expression.\n", rule_name);
+              abort_compilation = true;
+           }
+           if(location == 'l') lhs_not_simple = true;
+           atomScan(atom->bound_op.first_exp, interface, scope, rule_name,
+                    location, true, false);
+           atomScan(atom->bound_op.second_exp, interface, scope, rule_name,
+                    location, true, false);
+           atomScan(atom->bound_op.third_exp, interface, scope, rule_name,
+                    location, true, false);
+           break;
 
       case CONCAT:
            if(int_exp)

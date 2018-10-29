@@ -107,7 +107,8 @@ void generateRuleCode(Rule *rule, bool predicate, string output_dir, string f_pr
                    "#include \"label.h\"\n"
                    "#include \"graphStacks.h\"\n"
                    "#include \"parser.h\"\n"
-                   "#include \"morphism.h\"\n\n");
+                   "#include \"morphism.h\"\n"
+                   "#include \"common.h\"\n\n");
    PTF("#include \"%s.h\"\n\n", rule->name);
    if(strcmp(main_f, "Main") != 0){
      PTF("#include \"%s.h\"\n\n", main_f);

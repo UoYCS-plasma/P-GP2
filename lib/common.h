@@ -45,4 +45,7 @@ typedef char* string;
 
 extern FILE *log_file;
 
+int bound(int a, int b, int c);
+int rand_int(int a, int b);
+
 #endif /* INC_COMMON_H */

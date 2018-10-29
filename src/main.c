@@ -82,7 +82,10 @@ static bool validateProgram(string program_file, string main_f)
     * resulting in a valid AST. Hence, if syntax errors are encountered, semantic
     * analysis can still be performed. */
    bool valid_program = (yyparse() == 0);
-   if(!valid_program) return false;
+   if(!valid_program) {
+     printf("Total synax error\n");
+     return false;
+   }
    gp_program = reverse(gp_program);
    #ifdef DEBUG_PROGRAM
       /* analyseProgram prints the symbol table before exiting. */
@@ -91,6 +94,12 @@ static bool validateProgram(string program_file, string main_f)
    #else
       bool semantic_error = analyseProgram(gp_program, false, NULL, main_f);
    #endif
+   if(syntax_error){
+     printf("Syntax error\n");
+   }
+   else if(semantic_error){
+     printf("Semantic error\n");
+   }
    return (!syntax_error && !semantic_error);
 }
 
@@ -159,7 +168,7 @@ void printMakeFile(string output_dir, string install_dir, bool main_p)
 
    if(debug_flags) fprintf(makefile, "CFLAGS = -g -L$(LIB) -Wall -Wextra -lgp2\n\n");
    else fprintf(makefile, "CFLAGS = -I$(INCDIR) -L$(LIBDIR) -fomit-frame-pointer "
-                          "-O2 -Wall -Wextra -lgp2\n\n");
+                          "-O2 -Wall -Wextra -lgp2 -lm\n\n");
    fprintf(makefile, "default:\t$(OBJECTS)\n\t\t$(CC) $(OBJECTS) $(CFLAGS) -o gp2run\n\n");
    fprintf(makefile, "%%.o:\t\t%%.c\n\t\t$(CC) -c $(CFLAGS) -o $@ $<\n\n");
    fprintf(makefile, "clean:\t\n\t\trm *\n");

@@ -101,6 +101,15 @@ typedef struct RuleAtom {
          struct RuleAtom *left_exp;
          struct RuleAtom *right_exp;
       } bin_op;
+      struct {
+        struct RuleAtom *left_exp;
+        struct RuleAtom *right_exp;
+      } rand_op; 		   	  /* RANDOM INTEGER */
+      struct {
+        struct RuleAtom *first_exp;
+        struct RuleAtom *second_exp;
+        struct RuleAtom *third_exp;
+      } bound_op; 		   	  /* BOUND */
    };
 } RuleAtom;
 

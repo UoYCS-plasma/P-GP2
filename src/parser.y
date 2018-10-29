@@ -35,7 +35,8 @@
 
 %defines /* Creates the header file "parser.h" */
 %output "parser.c"
-
+%define parse.error verbose
+%define parse.trace
 /* Code placed at the top of parser.h. ast.h is included here so that the
  * types of gp_program and ast_host_graph are known when these variables
  * are declared in parser.h. */
@@ -86,7 +87,7 @@ bool syntax_error = false;
 %token MAIN IF TRY THEN ELSE SKIP FAIL BREAK
 %token WEIGHTED SWEIGHTED JWEIGHTED
 %token WHERE EDGETEST
-%token INDEG OUTDEG _LENGTH
+%token INDEG OUTDEG _LENGTH RANDINTOP BOUNDOP
 %token INT CHARACTER STRING ATOM LIST
 %token INTERFACE _EMPTY INJECTIVE
 %token <mark> MARK ANY_MARK
@@ -158,8 +159,6 @@ bool syntax_error = false;
 %destructor { freeASTCondition($$); } <cond_exp>
 %destructor { freeASTLabel($$); } <label>
 %destructor { freeASTAtom($$); } <atom_exp>
-
-%error-verbose
 
 %start Initialise
 
@@ -488,6 +487,8 @@ AtomExp: Variable			{ $$ = newASTVariable(@$, $1); if($1) free($1); }
 					  if($3) free($3); }
        | OUTDEG '(' NodeID ')' 		{ $$ = newASTDegreeOp(OUTDEGREE, @$, $3);
 				 	  if($3) free($3); }
+       | RANDINTOP '(' AtomExp ',' AtomExp ')' 		{ $$ = newASTRandInt(@$, $3, $5); }
+       | BOUNDOP '(' AtomExp ',' AtomExp ',' AtomExp ')' 		{ $$ = newASTBound(@$, $3, $5, $7); }
        | _LENGTH '(' Variable ')' 	{ $$ = newASTLength(@$, $3); if($3) free($3); }
        | '-' AtomExp %prec UMINUS 	{ $$ = newASTNegExp(@$, $2); }
        | '(' AtomExp ')' 		{ $$ = $2; }

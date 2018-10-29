@@ -767,6 +767,8 @@ void generateLabelEvaluationCode(RuleLabel label, bool node, int count, int cont
          case SUBTRACT:
          case MULTIPLY:
          case DIVIDE:
+         case RAND_INT:
+         case BOUND:
               PTFI("array%d[index%d].type = 'i';\n", indent, count, count);
               PTFI("array%d[index%d++].num = ", indent, count, count);
               generateIntExpression(atom, context, false, f_prefix);
@@ -887,6 +889,28 @@ void generateIntExpression(RuleAtom *atom, int context, bool nested, string f_pr
            generateIntExpression(atom->bin_op.right_exp, context, true, f_prefix);
            if(nested) PTF(")");
            break;
+      case RAND_INT:
+           if(nested) PTF("(");
+           PTF("rand_int(");
+           generateIntExpression(atom->rand_op.left_exp, context, true, f_prefix);
+           PTF(", ");
+           generateIntExpression(atom->rand_op.right_exp, context, true, f_prefix);
+           PTF(")");
+           if(nested) PTF(")");
+           break;
+      case BOUND:
+           if(nested) PTF("(");
+           PTF("bound(");
+           generateIntExpression(atom->bound_op.first_exp, context, true, f_prefix);
+           PTF(", ");
+           generateIntExpression(atom->bound_op.second_exp, context, true, f_prefix);
+           PTF(", ");
+           generateIntExpression(atom->bound_op.third_exp, context, true, f_prefix);
+           PTF(")");
+           if(nested) PTF(")");
+           break;
+
+
 
       default:
            print_to_log("Error (generateIntegerExpression): Unexpected "

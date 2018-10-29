@@ -248,6 +248,15 @@ typedef struct GPAtom {
       struct GPAtom *left_exp;
       struct GPAtom *right_exp;
     } bin_op; 		   	  /* ADD, SUBTRACT, MULTIPLY, DIVIDE, CONCAT */
+    struct {
+      struct GPAtom *left_exp;
+      struct GPAtom *right_exp;
+    } rand_op; 		   	  /* RANDOM INTEGER */
+    struct {
+      struct GPAtom *first_exp;
+      struct GPAtom *second_exp;
+      struct GPAtom *third_exp;
+    } bound_op; 		   	  /* BOUND */
   };
 } GPAtom;
 
@@ -261,6 +270,10 @@ GPAtom *newASTLength (YYLTYPE location, string name);
 GPAtom *newASTNegExp (YYLTYPE location, GPAtom *neg_exp);
 GPAtom *newASTBinaryOp(AtomType exp_type, YYLTYPE location, GPAtom *left_exp,
                        GPAtom *right_exp);
+GPAtom *newASTRandInt(YYLTYPE location, GPAtom *left_exp, GPAtom *right_exp);
+
+GPAtom *newASTBound(YYLTYPE location, GPAtom *first_exp, GPAtom *second_exp, GPAtom *third_exp);
+
 GPAtom *newASTConcat(YYLTYPE location, GPAtom *left_exp, GPAtom *right_exp);
 
 typedef enum {PROCEDURE = 0, RULE, NODE_PAIR, GRAPH, NODE, EDGE, LABEL} ASTNodeType;

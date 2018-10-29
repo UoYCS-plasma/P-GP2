@@ -1,13 +1,13 @@
 /* Copyright 2015-2017 Christopher Bak
 
-  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software: 
+  This file is part of the GP 2 Compiler. The GP 2 Compiler is free software:
   you can redistribute it and/or modify it under the terms of the GNU General
   Public License as published by the Free Software Foundation, either version 3
   of the License, or (at your option) any later version.
 
-  The GP 2 Compiler is distributed in the hope that it will be useful, but 
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+  The GP 2 Compiler is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
   more details.
 
   You should have received a copy of the GNU General Public License
@@ -67,15 +67,15 @@ Rule *makeRule(int variables, int left_nodes, int left_edges,
    return rule;
 }
 
-void addVariable(Rule *rule, int index, string name, GPType type) 
+void addVariable(Rule *rule, int index, string name, GPType type)
 {
    rule->variable_list[index].name = strdup(name);
-   rule->variable_list[index].type = type;  
+   rule->variable_list[index].type = type;
    rule->variable_list[index].predicates = NULL;
    rule->variable_list[index].predicate_count = 0;
-   rule->variable_list[index].used_by_rule = false;   
+   rule->variable_list[index].used_by_rule = false;
 }
-         
+
 int addRuleNode(RuleGraph *graph, bool root, RuleLabel label)
 {
    int index = graph->node_index++;
@@ -125,7 +125,7 @@ int addRuleEdge(RuleGraph *graph, bool bidirectional, RuleNode *source,
    graph->edges[index].label = label;
    source->outedges = addIncidentEdge(source->outedges, &(graph->edges[index]));
    target->inedges = addIncidentEdge(target->inedges, &(graph->edges[index]));
-   if(bidirectional) 
+   if(bidirectional)
    {
       source->bidegree++;
       target->bidegree++;
@@ -163,7 +163,7 @@ Predicate *makeTypeCheck(int bool_id, bool negated, ConditionType type, int vari
    predicate->variable_id = variable_id;
    return predicate;
 }
-   
+
 Predicate *makeEdgePred(int bool_id, bool negated, int source, int target, RuleLabel label)
 {
    Predicate *predicate = malloc(sizeof(Predicate));
@@ -231,12 +231,12 @@ void addNodePredicate(RuleNode *node, Predicate *predicate, int size)
    for(index = 0; index < size; index++)
    {
       /* The passed predicate may already be in the predicates array. */
-      if(node->predicates[index] == predicate) 
+      if(node->predicates[index] == predicate)
       {
          predicate_exists = true;
          break;
       }
-      if(node->predicates[index] == NULL) 
+      if(node->predicates[index] == NULL)
       {
          node->predicates[index++] = predicate;
          break;
@@ -261,12 +261,12 @@ void addVariablePredicate(Variable *variable, Predicate *predicate, int size)
    for(index = 0; index < size; index++)
    {
       /* The passed predicate may already be in the predicates array. */
-      if(variable->predicates[index] == predicate) 
+      if(variable->predicates[index] == predicate)
       {
          predicate_exists = true;
          break;
       }
-      if(variable->predicates[index] == NULL) 
+      if(variable->predicates[index] == NULL)
       {
          variable->predicates[index++] = predicate;
          break;
@@ -281,7 +281,7 @@ bool isPredicate(Rule *rule)
    else if(rule->rhs == NULL) return false;
 
    int index;
-   /* Return false if the rule relabels, remarks, or adds any items. 
+   /* Return false if the rule relabels, remarks, or adds any items.
     * The rule adds an item if there exists an RHS item that is not in the interface.
     * Relabelling is checked by examining the item's relabelled flag. */
    for(index = 0; index < rule->rhs->node_index; index++)
@@ -395,9 +395,9 @@ static bool equalAtoms(RuleAtom *left_atom, RuleAtom *right_atom)
            return equalAtoms(left_atom->neg_exp, right_atom->neg_exp);
 
       case CONCAT:
-           if(!equalAtoms(left_atom->bin_op.left_exp, 
+           if(!equalAtoms(left_atom->bin_op.left_exp,
                           right_atom->bin_op.left_exp)) return false;
-           if(!equalAtoms(left_atom->bin_op.right_exp, 
+           if(!equalAtoms(left_atom->bin_op.right_exp,
                           right_atom->bin_op.right_exp)) return false;
            return true;
 
@@ -416,7 +416,7 @@ bool equalRuleLists(RuleLabel left_label, RuleLabel right_label)
 
    RuleListItem *left_item = left_label.list->first;
    RuleListItem *right_item = right_label.list->first;
-  
+
    while(left_item != NULL)
    {
       if(right_item == NULL) return false;
@@ -433,36 +433,36 @@ bool hasListVariable(RuleLabel label)
    RuleListItem *item = label.list->first;
    while(item != NULL)
    {
-      if(item->atom->type == VARIABLE && 
+      if(item->atom->type == VARIABLE &&
          item->atom->variable.type == LIST_VAR) return true;
       item = item->next;
    }
    return false;
 }
 
-static void printOperation(RuleAtom *left_exp, RuleAtom *right_exp, 
+static void printOperation(RuleAtom *left_exp, RuleAtom *right_exp,
                            string const operation, bool nested, FILE *file);
 
 static void printRuleAtom(RuleAtom *atom, bool nested, FILE *file)
 {
-    switch(atom->type) 
+    switch(atom->type)
     {
-        case INTEGER_CONSTANT: 
+        case INTEGER_CONSTANT:
              fprintf(file, "%d", atom->number);
              break;
-              
+
         case STRING_CONSTANT:
              fprintf(file, "\"%s\"", atom->string);
 	     break;
 
-	case VARIABLE: 
+	case VARIABLE:
 	     fprintf(file, "%d", atom->variable.id);
 	     break;
 
 	case INDEGREE:
 	     fprintf(file, "indeg(%d)", atom->node_id);
 	     break;
- 
+
 	case OUTDEGREE:
 	     fprintf(file, "outdeg(%d)", atom->node_id);
 	     break;
@@ -477,7 +477,7 @@ static void printRuleAtom(RuleAtom *atom, bool nested, FILE *file)
 	     break;
 
 	case ADD:
-	     printOperation(atom->bin_op.left_exp, atom->bin_op.right_exp, 
+	     printOperation(atom->bin_op.left_exp, atom->bin_op.right_exp,
                             "+", nested, file);
 	     break;
 
@@ -487,27 +487,27 @@ static void printRuleAtom(RuleAtom *atom, bool nested, FILE *file)
 	     break;
 
 	case MULTIPLY:
-	     printOperation(atom->bin_op.left_exp, atom->bin_op.right_exp, 
+	     printOperation(atom->bin_op.left_exp, atom->bin_op.right_exp,
                             "*", nested, file);
 	     break;
 
 	case DIVIDE:
-	     printOperation(atom->bin_op.left_exp, atom->bin_op.right_exp, 
+	     printOperation(atom->bin_op.left_exp, atom->bin_op.right_exp,
                             "/", nested, file);
 	     break;
 
 	case CONCAT:
-	     printOperation(atom->bin_op.left_exp, atom->bin_op.right_exp, 
+	     printOperation(atom->bin_op.left_exp, atom->bin_op.right_exp,
                             ".", nested, file);
 	     break;
 
 	default: fprintf(file, "Error (printAtom): Unexpected atom type: %d\n",
-		        (int)atom->type); 
+		        (int)atom->type);
 		 break;
     }
 }
 
-static void printOperation(RuleAtom *left_exp, RuleAtom *right_exp, 
+static void printOperation(RuleAtom *left_exp, RuleAtom *right_exp,
                            string const operation, bool nested, FILE *file)
 {
    if(nested) fprintf(file, "(");
@@ -527,11 +527,11 @@ static void printRuleList(RuleListItem *item, FILE *file)
    }
 }
 
-static void printRuleLabel(RuleLabel label, FILE *file) 
+static void printRuleLabel(RuleLabel label, FILE *file)
 {
    if(label.length == 0) fprintf(file, "empty");
    else printRuleList(label.list->first, file);
-   if(label.mark == RED) fprintf(file, " # red"); 
+   if(label.mark == RED) fprintf(file, " # red");
    if(label.mark == GREEN) fprintf(file, " # green");
    if(label.mark == BLUE) fprintf(file, " # blue");
    if(label.mark == GREY) fprintf(file, " # grey");
@@ -543,7 +543,7 @@ static void printRuleLabel(RuleLabel label, FILE *file)
 static void printRuleGraph(RuleGraph *graph, FILE *file)
 {
    int index, node_count = 0, edge_count = 0;
-   if(graph == NULL || graph->node_index == 0) 
+   if(graph == NULL || graph->node_index == 0)
    {
       PTF("[ | ]\n");
       return;
@@ -578,7 +578,7 @@ static void printRuleGraph(RuleGraph *graph, FILE *file)
    }
    PTF("]\n\n");
 }
-   
+
 static void printCondition(Condition *condition, bool nested, FILE *file)
 {
    if(condition->type == 'e')
@@ -654,7 +654,7 @@ static void printCondition(Condition *condition, bool nested, FILE *file)
 
 void printRule(Rule *rule, FILE *file)
 {
-   if(rule == NULL) 
+   if(rule == NULL)
    {
       print_to_log("Error (printRule): NULL rule pointer.\n\n");
       return;
@@ -666,11 +666,11 @@ void printRule(Rule *rule, FILE *file)
    PTF("\n");
 
    if(rule->variable_list == NULL) PTF("No variables.\n\n");
-   else 
+   else
    {
       PTF("Variables:\n");
       int index;
-      for(index = 0; index < rule->variables; index++)   
+      for(index = 0; index < rule->variables; index++)
       {
          Variable variable = rule->variable_list[index];
          PTF("%d: %s, type %d.", index, variable.name, variable.type);
@@ -693,7 +693,7 @@ void printRule(Rule *rule, FILE *file)
 static void freeRuleAtom(RuleAtom *atom)
 {
    if(atom == NULL) return;
-   switch(atom->type) 
+   switch(atom->type)
    {
      case VARIABLE:
      case INTEGER_CONSTANT:
@@ -722,9 +722,18 @@ static void freeRuleAtom(RuleAtom *atom)
           if(atom->bin_op.left_exp != NULL) freeRuleAtom(atom->bin_op.left_exp);
           if(atom->bin_op.right_exp != NULL) freeRuleAtom(atom->bin_op.right_exp);
           break;
+     case RAND_INT:
+          if(atom->rand_op.left_exp) freeRuleAtom(atom->rand_op.left_exp);
+          if(atom->rand_op.right_exp) freeRuleAtom(atom->rand_op.right_exp);
+          break;
+     case BOUND:
+          if(atom->bound_op.first_exp) freeRuleAtom(atom->bound_op.first_exp);
+          if(atom->bound_op.second_exp) freeRuleAtom(atom->bound_op.second_exp);
+          if(atom->bound_op.third_exp) freeRuleAtom(atom->bound_op.third_exp);
+          break;
 
-     default: printf("Error (freeAtom): Unexpected atom type: %d\n", 
-                     (int)atom->type); 
+     default: printf("Error (freeAtom): Unexpected atom type: %d\n",
+                     (int)atom->type);
               break;
    }
    free(atom);
@@ -821,10 +830,10 @@ void freeRule(Rule *rule)
 {
    if(rule == NULL) return;
    if(rule->name != NULL) free(rule->name);
-   if(rule->variable_list != NULL) 
+   if(rule->variable_list != NULL)
    {
       int index;
-      for(index = 0; index < rule->variables; index++)   
+      for(index = 0; index < rule->variables; index++)
       {
          Variable variable = rule->variable_list[index];
          if(variable.predicates != NULL) free(variable.predicates);
@@ -836,4 +845,3 @@ void freeRule(Rule *rule)
    if(rule->condition != NULL) freeCondition(rule->condition);
    free(rule);
 }
-

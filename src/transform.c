@@ -444,6 +444,16 @@ static void scanRHSAtom(Rule *rule, bool relabelled, RuleAtom *atom)
            scanRHSAtom(rule, relabelled, atom->bin_op.left_exp);
            scanRHSAtom(rule, relabelled, atom->bin_op.right_exp);
            break;
+      case RAND_INT:
+           scanRHSAtom(rule, relabelled, atom->rand_op.left_exp);
+           scanRHSAtom(rule, relabelled, atom->rand_op.right_exp);
+           break;
+      case BOUND:
+           scanRHSAtom(rule, relabelled, atom->bound_op.first_exp);
+           scanRHSAtom(rule, relabelled, atom->bound_op.second_exp);
+           scanRHSAtom(rule, relabelled, atom->bound_op.third_exp);
+           break;
+
 
       default: break;
    }
@@ -538,6 +548,46 @@ static RuleAtom *transformAtom(Rule *rule, GPAtom *ast_atom, IndexMap *node_map)
            atom->bin_op.left_exp = transformAtom(rule, ast_atom->bin_op.left_exp, node_map);
            atom->bin_op.right_exp = transformAtom(rule, ast_atom->bin_op.right_exp, node_map);
            break;
+      case RAND_INT:
+           atom->rand_op.left_exp = malloc(sizeof(RuleAtom));
+           if(atom->rand_op.left_exp == NULL)
+           {
+              print_to_log("Error (transformAtom): malloc failure.\n");
+              exit(1);
+           }
+           atom->rand_op.right_exp = malloc(sizeof(RuleAtom));
+           if(atom->rand_op.right_exp == NULL)
+           {
+              print_to_log("Error (transformAtom): malloc failure.\n");
+              exit(1);
+           }
+           atom->rand_op.left_exp = transformAtom(rule, ast_atom->rand_op.left_exp, node_map);
+           atom->rand_op.right_exp = transformAtom(rule, ast_atom->rand_op.right_exp, node_map);
+           break;
+      case BOUND:
+           atom->bound_op.first_exp = malloc(sizeof(RuleAtom));
+           if(atom->bound_op.first_exp == NULL)
+           {
+              print_to_log("Error (transformAtom): malloc failure.\n");
+              exit(1);
+           }
+           atom->bound_op.second_exp = malloc(sizeof(RuleAtom));
+           if(atom->bound_op.first_exp == NULL)
+           {
+              print_to_log("Error (transformAtom): malloc failure.\n");
+              exit(1);
+           }
+           atom->bound_op.third_exp = malloc(sizeof(RuleAtom));
+           if(atom->bound_op.third_exp == NULL)
+           {
+              print_to_log("Error (transformAtom): malloc failure.\n");
+              exit(1);
+           }
+           atom->bound_op.first_exp = transformAtom(rule, ast_atom->bound_op.first_exp, node_map);
+           atom->bound_op.second_exp = transformAtom(rule, ast_atom->bound_op.second_exp, node_map);
+           atom->bound_op.third_exp = transformAtom(rule, ast_atom->bound_op.third_exp, node_map);
+           break;
+
 
       default:
            print_to_log("Error (transformAtom): Unexpected atom type %d.\n", ast_atom->type);
@@ -711,6 +761,15 @@ static void scanPredicateAtom(Rule *rule, RuleAtom *atom, Predicate *predicate)
       case CONCAT:
            scanPredicateAtom(rule, atom->bin_op.left_exp, predicate);
            scanPredicateAtom(rule, atom->bin_op.right_exp,  predicate);
+           break;
+      case RAND_INT:
+           scanPredicateAtom(rule, atom->rand_op.left_exp, predicate);
+           scanPredicateAtom(rule, atom->rand_op.right_exp, predicate);
+           break;
+      case BOUND:
+           scanPredicateAtom(rule, atom->bound_op.first_exp, predicate);
+           scanPredicateAtom(rule, atom->bound_op.second_exp, predicate);
+           scanPredicateAtom(rule, atom->bound_op.third_exp, predicate);
            break;
 
       default:

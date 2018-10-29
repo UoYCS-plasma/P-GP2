@@ -126,6 +126,8 @@ not                 return NOT;
 edge                return EDGETEST;
 indeg 		    return INDEG;
 outdeg		    return OUTDEG;
+rand_int 		    return RANDINTOP;
+bound 		    return BOUNDOP;
 interface	    return INTERFACE;
 empty		    return _EMPTY;
 length		    return _LENGTH;
