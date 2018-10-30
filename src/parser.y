@@ -85,9 +85,8 @@ bool syntax_error = false;
 
 /* Single character tokens do not need to be explicitly declared. */
 %token MAIN IF TRY THEN ELSE SKIP FAIL BREAK
-%token WEIGHTED SWEIGHTED JWEIGHTED
 %token WHERE EDGETEST
-%token INDEG OUTDEG _LENGTH RANDINTOP BOUNDOP
+%token INDEG OUTDEG _LENGTH RANDINTOP BOUNDOP G_UNIFORM
 %token INT CHARACTER STRING ATOM LIST
 %token INTERFACE _EMPTY INJECTIVE
 %token <mark> MARK ANY_MARK
@@ -297,8 +296,8 @@ Block: '(' ComSeq ')' 	                { $$ = newASTCommandSequence(@$, $2); }
      | BREAK				{ $$ = newASTBreak(@$); }
 
 SimpleCommand: RuleSetCall 	        { $$ = newASTRuleSetCall(@$, $1); }
+              | G_UNIFORM SWeightedRuleSetCall 	        { $$ = newASTJoinedWeightedRuleSetCall(@$, $2); }
               | SWeightedRuleSetCall 	        { $$ = newASTSeparateWeightedRuleSetCall(@$, $1); }
-              | JWEIGHTED RuleSetCall 	        { $$ = newASTJoinedWeightedRuleSetCall(@$, $2); }
              | RuleID                   { $$ = newASTRuleCall(@$, $1); if($1) free($1); }
             | '[' RuleID ']'                  { $$ = newASTWeightedRuleCall(@$, $2); if($2) free($2); }
 	     | ProcID	 		{ $$ = newASTProcCall(@$, $1); if($1) free($1); }

@@ -128,12 +128,10 @@ indeg 		    return INDEG;
 outdeg		    return OUTDEG;
 rand_int 		    return RANDINTOP;
 bound 		    return BOUNDOP;
+g_uniform:    return G_UNIFORM;
 interface	    return INTERFACE;
 empty		    return _EMPTY;
 length		    return _LENGTH;
-weighted:             return WEIGHTED;
-sweighted:             return SWEIGHTED;
-jweighted:             return JWEIGHTED;
 
  /* Keywords for node and edge marks */
 red		    { yylval.mark = RED; return MARK; }
