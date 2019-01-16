@@ -35,7 +35,7 @@
  * possible input.
  */
 
-%option noyywrap nodefault noinput nounput
+%option noyywrap yylineno nodefault noinput nounput
 %option outfile="lexer.c"
 
 %{
