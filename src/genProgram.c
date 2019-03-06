@@ -207,13 +207,21 @@ void generateRuntimeMain(List *declarations, string output_dir, string main_f, b
      /* Open the runtime's main function and set up the execution environment. */
      PTF("int main(int argc, char **argv)\n");
      PTF("{\n");
-     PTFI("srand(time(NULL));\n", 3);
      PTFI("openLogFile(\"gp2.log\");\n\n", 3);
-     PTFI("if(argc != 2)\n", 3);
+     PTFI("if(argc < 2)\n", 3);
      PTFI("{\n", 3);
      PTFI("fprintf(stderr, \"Error: missing <host-file> argument.\\n\");\n", 6);
      PTFI("return 0;\n", 6);
      PTFI("}\n\n", 3);
+     PTFI("if(argc == 3)\n", 3);
+     PTFI("{\n", 3);
+     PTFI("srand(atoi(argv[2]));\n", 6);
+     PTFI("}\n\n", 3);
+     PTFI("else\n", 3);
+     PTFI("{\n", 3);
+     PTFI("srand(time(NULL));\n", 6);
+     PTFI("}\n\n", 3);
+
      #if defined GRAPH_TRACING || defined RULE_TRACING || defined BACKTRACK_TRACING
         PTFI("openTraceFile(\"gp2.trace\");\n", 3);
      #endif

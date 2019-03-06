@@ -655,7 +655,6 @@ static void emitNodeMatchResultCode(Rule *rule, RuleNode *node, SearchOp *next_o
            }
            PTFI("removeNodeMap(morphism, %d);\n", indent + 6, node->index);
            PTFI("host_node->matched = false;\n", indent + 6);
-           PTFI("return false;\n", indent + 6);
          }
          PTFI("}\n", indent + 3);
       }
@@ -886,7 +885,6 @@ static void emitEdgeMatchResultCode(Rule *rule, int index, SearchOp *next_op, in
         PTFI("putMorphism(pot, morphism, \"%s\", %shost);\n", indent + 6, rule->name, f_prefix);
         PTFI("removeEdgeMap(morphism, %d);\n", indent + 6, index);
         PTFI("host_edge->matched = false;\n", indent + 6);
-        PTFI("return false;\n", indent + 6);
       }
    }
    else
