@@ -245,7 +245,7 @@ static void generatePredicateCode(Rule *rule, Predicate *predicate, string f_pre
                  {
                     /* generateVariableCode prints with indent 3. Indent of 9 is required. */
                     PTF("      ");
-                    generateVariableCode(count, item->atom->variable.type);
+                    generateVariableCode(item->atom->variable.id, item->atom->variable.type);
                  }
                  item = item->next;
               }
