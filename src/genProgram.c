@@ -62,10 +62,6 @@ typedef enum {MAIN_BODY, IF_BODY, TRY_BODY, LOOP_BODY} ContextType;
    int indent;
 } CommandData;
 
-/* Arguments passed to the newGraph function at runtime. */
-#define HOST_NODE_SIZE 100000
-#define HOST_EDGE_SIZE 100000
-
 static void generateMorphismCode(List *declarations, char type, bool first_call, string f_prefix);
 static void generateProgramCode(GPCommand *command, CommandData data, string f_prefix, bool main_p);
 static void generateRuleCall(string rule_name, bool empty_lhs, bool predicate,
@@ -77,7 +73,8 @@ static bool neverFails(GPCommand *command);
 static bool nullCommand(GPCommand *command);
 static bool singleRule(GPCommand *command);
 
-void generateRuntimeMain(List *declarations, string output_dir, string main_f, bool main_p)
+void generateRuntimeMain(List *declarations, string output_dir, string main_f, bool main_p,
+                         unsigned int max_nodes, unsigned int max_edges)
 {
    int length = strlen(output_dir) + strlen(main_f) + 3;
    char main_file[length];
@@ -319,8 +316,8 @@ void generateRuntimeMain(List *declarations, string output_dir, string main_f, b
      PTFI("perror(host_file);\n", 6);
      PTFI("return NULL;\n", 6);
      PTFI("}\n\n", 3);
-     PTFI("host = newGraph(%d, %d);\n", 3, HOST_NODE_SIZE, HOST_EDGE_SIZE);
-     PTFI("node_map = calloc(%d, sizeof(int));\n", 3, HOST_NODE_SIZE);
+     PTFI("host = newGraph(%u, %u);\n", 3, max_nodes, max_edges);
+     PTFI("node_map = calloc(%u, sizeof(int));\n", 3, max_nodes);
      PTFI("if(node_map == NULL)\n", 3);
      PTFI("{\n", 3);
      PTFI("freeGraph(host);\n", 6);
