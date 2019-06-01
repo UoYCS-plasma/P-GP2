@@ -1019,11 +1019,7 @@ void generateAddRHSCode(Rule *rule, string f_prefix)
             blank_label = true;
          }
       }
-      else
-      {
-         PTFI("int host_edge_index = lookupEdge(morphism, %d);\n", 3, index);
-         generateLabelEvaluationCode(node->label, true, index, 0, 3, f_prefix);
-      }
+      else generateLabelEvaluationCode(node->label, true, index, 0, 3, f_prefix);
       PTFI("int node_array_size%d = %shost->nodes.size;\n", 3, index, f_prefix);
       PTFI("index = addNode(%shost, %d, label);\n", 3, f_prefix, node->root);
       if(rule->adds_edges) PTFI("map[%d] = index;\n", 3, node->index);
@@ -1044,11 +1040,7 @@ void generateAddRHSCode(Rule *rule, string f_prefix)
             blank_label = true;
          }
       }
-      else
-      {
-         PTFI("int host_edge_index = lookupEdge(morphism, %d);\n", 3, index);
-         generateLabelEvaluationCode(edge->label, false, index, 0, 3, f_prefix);
-      }
+      else generateLabelEvaluationCode(edge->label, false, index, 0, 3, f_prefix);
       /* The host-source and host-target of added edges are taken from the
        * map populated in the previous loop. */
       PTFI("int edge_array_size%d = %shost->edges.size;\n", 3, index, f_prefix);
@@ -1062,7 +1054,6 @@ void generateAddRHSCode(Rule *rule, string f_prefix)
    PTF("}\n");
    return;
 }
-
 
 void generateApplicationCode(Rule *rule, string f_prefix)
 {
