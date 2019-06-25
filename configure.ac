@@ -44,15 +44,6 @@ AC_CONFIG_FILES([Makefile
 
 AC_OUTPUT
 
-AC_MSG_CHECKING(whether fPIC compiler option is accepted)
-SAVED_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS -fPIC -Werror"
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [return 0;])],
-    [AC_MSG_RESULT(yes)
-     CFLAGS="$SAVED_CFLAGS -fPIC"],
-    [AC_MSG_RESULT(no)
-     CFLAGS="$SAVED_CFLAGS"])
-
 echo "
    ($PACKAGE_NAME) version $PACKAGE_VERSION
    Prefix........: $prefix
