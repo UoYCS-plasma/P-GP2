@@ -245,10 +245,11 @@ static void generatePredicateCode(Rule *rule, Predicate *predicate, string f_pre
                  {
                     /* generateVariableCode prints with indent 3. Indent of 9 is required. */
                     PTF("      ");
-                    generateVariableCode(count, item->atom->variable.type);
+                    generateVariableCode(item->atom->variable.id, item->atom->variable.type);
                  }
                  item = item->next;
               }
+              PTFI("int host_edge_index = lookupEdge(morphism, %d);\n", 9, index);
               generateLabelEvaluationCode(predicate->edge_pred.label, false, list_count++, 1, 9, f_prefix);
               PTFI("if(equalHostLabels(label, edge->label))\n", 9);
               PTFI("{\n", 9);
@@ -291,6 +292,7 @@ static void generatePredicateCode(Rule *rule, Predicate *predicate, string f_pre
            }
            else
            {
+              PTFI("int host_edge_index = lookupEdge(morphism, %d);\n", 3, index);
               generateLabelEvaluationCode(left_label, false, list_count++, 2, 3, f_prefix);
               generateLabelEvaluationCode(right_label, false, list_count++, 3, 3, f_prefix);
               PTFI("if(", 3);
