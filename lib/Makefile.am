@@ -1,7 +1,7 @@
 BUILT_SOURCES = lexer.c parser.h parser.c
 AM_YFLAGS = -d
 
-CFLAGS += " -fPIC"
+CFLAGS += -fPIC
 
 lib_LIBRARIES = libgp2.a
 
