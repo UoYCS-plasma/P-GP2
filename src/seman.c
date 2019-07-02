@@ -977,6 +977,48 @@ int conditionScan(GPCondition *condition, List *interface, string scope,
                          scope, rule_name, 'c');
            break;
       }
+      /* For an edge predicate, the source and target node IDs must be present
+       * in the interface of the rule. The optional label argument is also scanned. */
+      case PATH_PRED:
+      {
+           predicate_count++;
+           bool in_interface = false;
+           List *iterator = interface;
+           while(iterator != NULL)
+           {
+              if(!strcmp(condition->path_pred.source, iterator->node_id))
+              {
+                 in_interface = true;
+                 break;
+              }
+              iterator = iterator->next;
+           }
+           if(!in_interface)
+           {
+              print_error("Error (%s): Node %s in edge predicate not in the "
+                          "interface.\n", rule_name, condition->edge_pred.source);
+              abort_compilation = true;
+           }
+           in_interface = false;
+
+           iterator = interface;
+           while(iterator != NULL)
+           {
+              if(!strcmp(condition->path_pred.target, iterator->node_id))
+              {
+                 in_interface = true;
+                 break;
+              }
+              iterator = iterator->next;
+           }
+           if(!in_interface)
+           {
+              print_error("Error (%s): Node %s in edge predicate not in the "
+                          "interface.\n", rule_name, condition->path_pred.target);
+              abort_compilation = true;
+           }
+           break;
+      }
 
       case EQUAL:
       case NOT_EQUAL:

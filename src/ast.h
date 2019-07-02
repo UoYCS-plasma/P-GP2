@@ -199,6 +199,11 @@ typedef struct GPCondition {
     } edge_pred; 		/* EDGE_PRED */
 
     struct {
+     string source;
+     string target;
+   } path_pred; 		/* PATH_PRED */
+
+    struct {
       struct List *left_list;
       struct List *right_list;
     } list_cmp; 		/* EQUAL, NOT_EQUAL */
@@ -221,6 +226,7 @@ GPCondition *makeGPCondition(YYLTYPE location, CommandType type);
 GPCondition *newASTSubtypePred(ConditionType exp_type, YYLTYPE location, string var);
 GPCondition *newASTEdgePred(YYLTYPE location, string source, string target,
 	                    struct GPLabel *label);
+GPCondition *newASTPathPred(YYLTYPE location, string source, string target);
 GPCondition *newASTListComparison(ConditionType exp_type, YYLTYPE location,
 	                          List *left_list, List *right_list);
 GPCondition *newASTAtomComparison(ConditionType exp_type, YYLTYPE location,

@@ -85,7 +85,7 @@ bool syntax_error = false;
 
 /* Single character tokens do not need to be explicitly declared. */
 %token MAIN IF TRY THEN ELSE SKIP FAIL BREAK
-%token WHERE EDGETEST
+%token WHERE EDGETEST PATHTEST
 %token INDEG OUTDEG _LENGTH RANDINTOP BOUNDOP G_UNIFORM
 %token INT CHARACTER STRING ATOM LIST
 %token INTERFACE _EMPTY INJECTIVE
@@ -447,6 +447,9 @@ Condition: Subtype '(' Variable ')' 	{ $$ = newASTSubtypePred($1, @$, $3);
 					  if($3) free($3); }
          | EDGETEST '(' NodeID ',' NodeID  LabelArg ')'
 					{ $$ = newASTEdgePred(@$, $3, $5, $6);
+					  if($3) free($3); if($5) free($5); }
+         | PATHTEST '(' NodeID ',' NodeID ')'
+					{ $$ = newASTPathPred(@$, $3, $5);
 					  if($3) free($3); if($5) free($5); }
 	 | List '=' List 		{ $$ = newASTListComparison(EQUAL, @$, $1, $3); }
 	 | List NEQ List 		{ $$ = newASTListComparison(NOT_EQUAL, @$, $1, $3); }

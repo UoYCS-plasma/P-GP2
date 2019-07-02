@@ -97,12 +97,14 @@ void generateRuntimeMain(List *declarations, string output_dir, string main_f, b
    PTF("#include <time.h>\n");
    PTF("#include \"common.h\"\n");
    PTF("#include \"debug.h\"\n");
-   PTF("#include \"graph.h\"\n");
    PTF("#include \"graphStacks.h\"\n");
    PTF("#include \"parser.h\"\n");
-   PTF("#include \"morphism.h\"\n\n");
    if(!main_p){
-   //PTF("#include \"%s.h\"\n\n", main_f);
+   PTF("#include \"%s.h\"\n\n", main_f);
+   }
+   else{
+   PTF("#include \"graph.h\"\n");
+   PTF("#include \"morphism.h\"\n\n");
    }
 
    /* Declare the global morphism variables for each rule. */
@@ -126,6 +128,9 @@ void generateRuntimeMain(List *declarations, string output_dir, string main_f, b
         perror(main_f);
         exit(1);
      }
+     fprintf(header,"#include \"common.h\"\n");
+     fprintf(header,"#include \"graph.h\"\n");
+     fprintf(header,"#include \"morphism.h\"\n\n");
      fprintf(header, "extern Graph *%shost;\n", f_prefix);
      fprintf(header, "extern int *%snode_map;\n", f_prefix);
 

@@ -46,7 +46,7 @@
  * is used to allocate memory for Predicate pointer arrays in nodes and variables. */
 typedef struct Rule {
    string name;
-   bool is_rooted, adds_nodes, adds_edges;
+   bool is_rooted, adds_nodes, adds_edges, path_pred;
    struct Variable *variable_list;
    int variables;
    struct RuleGraph *lhs;
@@ -200,6 +200,10 @@ typedef struct Predicate {
          struct RuleLabel label;
       } edge_pred; /* Edge predicate. */
       struct {
+         int source;
+         int target;
+      } path_pred; /* Path predicate. */
+      struct {
          struct RuleLabel left_label;
          struct RuleLabel right_label;
       } list_comp; /* Relational operators over lists. */
@@ -235,6 +239,7 @@ Condition *makeCondition(void);
  * type of the predicate and the arguments passed to the function. */
 Predicate *makeTypeCheck(int bool_id, bool negated, ConditionType type, int variable_id);
 Predicate *makeEdgePred(int bool_id, bool negated, int source, int target, RuleLabel label);
+Predicate *makePathPred(int bool_id, bool negated, int source, int target);
 Predicate *makeListComp(int bool_id, bool negated, ConditionType type,
                         RuleLabel left_label, RuleLabel right_label);
 Predicate *makeAtomComp(int bool_id, bool negated, ConditionType type,

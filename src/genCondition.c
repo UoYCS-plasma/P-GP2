@@ -273,6 +273,18 @@ static void generatePredicateCode(Rule *rule, Predicate *predicate, string f_pre
            PTFI("if(!edge_found) %sb%d = false;\n", 3, f_prefix, predicate->bool_id);
            break;
       }
+
+      case PATH_PRED:
+      {
+           int source = predicate->edge_pred.source;
+           int target = predicate->edge_pred.target;
+           PTFI("if(%s_%s_path_map[n%d] == NULL){\n", 3, f_prefix, rule->name, source);
+           PTFI("path_node_DFS(%s_%s_path_map, %shost, n%d);\n", 6, f_prefix, rule->name, f_prefix, source);
+           PTFI("}\n", 3);
+           PTFI("%sb%d = (%s_%s_path_map[n%d][n%d] == 1);\n", 3, f_prefix, predicate->bool_id, f_prefix, rule->name, source, target);
+           break;
+      }
+
       case EQUAL:
       case NOT_EQUAL:
       {
@@ -292,7 +304,6 @@ static void generatePredicateCode(Rule *rule, Predicate *predicate, string f_pre
            }
            else
            {
-              PTFI("int host_edge_index = lookupEdge(morphism, %d);\n", 3, index);
               generateLabelEvaluationCode(left_label, false, list_count++, 2, 3, f_prefix);
               generateLabelEvaluationCode(right_label, false, list_count++, 3, 3, f_prefix);
               PTFI("if(", 3);

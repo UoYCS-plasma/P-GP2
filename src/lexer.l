@@ -124,6 +124,7 @@ and                 return AND;
 or                  return OR;
 not                 return NOT;
 edge                return EDGETEST;
+path                return PATHTEST;
 indeg 		    return INDEG;
 outdeg		    return OUTDEG;
 rand_int 		    return RANDINTOP;

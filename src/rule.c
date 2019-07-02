@@ -52,6 +52,7 @@ Rule *makeRule(int variables, int left_nodes, int left_edges,
    rule->is_rooted = false;
    rule->adds_nodes = false;
    rule->adds_edges = false;
+   rule->path_pred = false;
    rule->variable_list = calloc(variables, sizeof(Variable));
    if(rule->variable_list == NULL)
    {
@@ -180,6 +181,23 @@ Predicate *makeEdgePred(int bool_id, bool negated, int source, int target, RuleL
    predicate->edge_pred.label = label;
    return predicate;
 }
+
+Predicate *makePathPred(int bool_id, bool negated, int source, int target)
+{
+   Predicate *predicate = malloc(sizeof(Predicate));
+   if(predicate == NULL)
+   {
+      print_to_log("Error (makePredicate): malloc failure.\n");
+      exit(1);
+   }
+   predicate->bool_id = bool_id;
+   predicate->negated = negated;
+   predicate->type = PATH_PRED;
+   predicate->path_pred.source = source;
+   predicate->path_pred.target = target;
+   return predicate;
+}
+
 
 Predicate *makeListComp(int bool_id, bool negated, ConditionType type,
                         RuleLabel left_label, RuleLabel right_label)

@@ -116,6 +116,9 @@ void generateRuleCode(Rule *rule, bool predicate, string output_dir, string f_pr
 
    if(rule->condition != NULL)
    {
+      if (rule->path_pred){
+        PTF("int** %s_%s_path_map;\n", f_prefix, rule->name);
+      }
       /* The condition is iterated over three times.
        * The first iteration declares and initialises the runtime global boolean
        * varables, one for each predicate in the condition.
@@ -200,21 +203,34 @@ static void generateMatchingCode(Rule *rule, bool predicate, string f_prefix)
    PTFI("if(%d > %shost->number_of_nodes || %d > %shost->number_of_edges) return false;\n",
         3, rule->lhs->node_index, f_prefix, rule->lhs->edge_index, f_prefix);
    char item = searchplan->first->is_node ? 'n' : 'e';
-
+   if(rule->path_pred){
+      PTFI("%s_%s_path_map = makePathMap(%shost);\n", 3, f_prefix, rule->name, f_prefix);
+   }
    if(predicate)
    {
       PTFI("bool match = match_%c%d(morphism);\n", 3, item, searchplan->first->index);
       /* Reset the matched flags in the host graph. This is normally done after
        * rule application, but predicate rules are not applied. */
       PTFI("initialiseMorphism(morphism, %shost);\n", 3, f_prefix);
+     if (rule->path_pred){
+       PTFI("freePathMap(%s_%s_path_map, %shost);\n", 6, f_prefix, rule->name, f_prefix);
+     }
       PTFI("return match;\n", 3);
    }
    else
    {
-      PTFI("if(match_%c%d(morphism)) return true;\n", 3, item, searchplan->first->index);
+      PTFI("if(match_%c%d(morphism)) {\n", 3, item, searchplan->first->index);
+      if (rule->path_pred){
+       PTFI("freePathMap(%s_%s_path_map, %shost);\n", 6, f_prefix, rule->name, f_prefix);
+      }
+      PTFI("return true;\n", 6);
+      PTFI("}\n", 3);
       PTFI("else\n", 3);
       PTFI("{\n", 3);
       PTFI("initialiseMorphism(morphism, %shost);\n", 6, f_prefix);
+      if (rule->path_pred){
+       PTFI("freePathMap(%s_%s_path_map, %shost);\n", 6, f_prefix, rule->name, f_prefix);
+      }
       PTFI("return false;\n", 6);
       PTFI("}\n", 3);
    }
@@ -335,17 +351,27 @@ static void generatePotMatchingCode(Rule *rule, string f_prefix)
    PTF("{\n");
    PTFI("if(%d > %shost->number_of_nodes || %d > %shost->number_of_edges) return false;\n",
         3, rule->lhs->node_index, f_prefix, rule->lhs->edge_index, f_prefix);
+
+   if(rule->path_pred){
+     PTFI("%s_%s_path_map = makePathMap(%shost);\n", 3, f_prefix, rule->name, f_prefix);
+   }
    char item = searchplan->first->is_node ? 'n' : 'e';
    PTFI("int oldPotsize = potSize(pot);\n", 3);
    PTFI("morphism->weight = %lf;\n", 3, rule->weight);
 
    PTFI("fillpot_%c%d(pot, morphism);\n", 3, item, searchplan->first->index);
    PTFI("if(potSize(pot) > oldPotsize){\n", 3);
+   if (rule->path_pred){
+    PTFI("freePathMap(%s_%s_path_map, %shost);\n", 6, f_prefix, rule->name, f_prefix);
+   }
    PTFI("initialiseMorphism(morphism, %shost);\n", 6, f_prefix);
    PTFI("return true;\n", 6);
    PTFI("}\n", 3);
    PTFI("else\n", 3);
    PTFI("{\n", 3);
+   if (rule->path_pred){
+    PTFI("freePathMap(%s_%s_path_map, %shost);\n", 6, f_prefix, rule->name, f_prefix);
+   }
    PTFI("initialiseMorphism(morphism, %shost);\n", 6, f_prefix);
    PTFI("return false;\n", 6);
    PTFI("}\n", 3);
@@ -1021,7 +1047,6 @@ void generateAddRHSCode(Rule *rule, string f_prefix)
       }
       else
       {
-         PTFI("int host_edge_index = lookupEdge(morphism, %d);\n", 3, index);
          generateLabelEvaluationCode(node->label, true, index, 0, 3, f_prefix);
       }
       PTFI("int node_array_size%d = %shost->nodes.size;\n", 3, index, f_prefix);
@@ -1046,7 +1071,6 @@ void generateAddRHSCode(Rule *rule, string f_prefix)
       }
       else
       {
-         PTFI("int host_edge_index = lookupEdge(morphism, %d);\n", 3, index);
          generateLabelEvaluationCode(edge->label, false, index, 0, 3, f_prefix);
       }
       /* The host-source and host-target of added edges are taken from the
