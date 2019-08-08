@@ -124,9 +124,10 @@ void generateRuleCode(Rule *rule, bool predicate, string output_dir, string f_pr
        * varables, one for each predicate in the condition.
        * The second iteration writes the function to evaluate the condition.
        * The third iteration writes the functions to evaluate the predicates. */
-      generateConditionVariables(rule->condition, f_prefix);
+      generateConditionVariables(rule->condition, f_prefix, false);
+      printf("\n");
       PTF("\n");
-      generateConditionEvaluator(rule->condition, false, f_prefix);
+      generateConditionEvaluator(rule->condition, false, f_prefix, false);
       generatePredicateEvaluators(rule, rule->condition, f_prefix);
    }
    //May use deterministic matching in probabilistic mode so normal code generated as well
@@ -1318,7 +1319,7 @@ void generateApplicationCode(Rule *rule, string f_prefix)
       }
       PTFI("int node_array_size%d = %shost->nodes.size;\n", 3, index, f_prefix);
       if(node->label.length == 0 && node->label.mark == NONE)
-         PTFI("host_node_index = addNode(%shost, %d, blank_label);\n", 3, f_prefix, node->root);
+         PTFI("host_node_index = addNode(%shost, %d, makeEmptyLabel(0));\n", 3, f_prefix, node->root);
       else
       {
          if(!label_declared)
@@ -1365,7 +1366,7 @@ void generateApplicationCode(Rule *rule, string f_prefix)
       else PTFI("target = rhs_node_map[%d];\n", 3, edge->target->index);
 
       if(edge->label.length == 0 && edge->label.mark == NONE)
-         PTFI("host_edge_index = addEdge(%shost, blank_label, source, target);\n", 3, f_prefix);
+         PTFI("host_edge_index = addEdge(%shost, makeEmptyLabel(0), source, target);\n", 3, f_prefix);
       else
       {
          if(!label_declared)

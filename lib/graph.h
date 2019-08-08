@@ -168,4 +168,5 @@ void path_node_DFS(int** path_map, Graph* graph, int node_index);
 int** makePathMap(Graph* graph);
 void freePathMap(int** path_map, Graph* graph);
 Graph* duplicate_graph(Graph *graph);
+Graph* disjoint_union(Graph* A, Graph* B);
 #endif /* INC_GRAPH_H */
