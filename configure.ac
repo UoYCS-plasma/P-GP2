@@ -1,6 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
+
+
 AC_PREREQ([2.69])
 AC_INIT([gp2], [1.0])
 #LT_PREREQ([2.2])
@@ -17,7 +19,7 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
-# Checks for libraries. To use the result, add LIBS = @LIBS@ to the appropriate 
+# Checks for libraries. To use the result, add LIBS = @LIBS@ to the appropriate
 # Makefile.in and $(LIBS) to the C compiler call.
 # AC_SEARCH_LIBS([g_hash_table_new_full], [glib])
 PKG_CHECK_MODULES([GLIB], [glib-2.0])

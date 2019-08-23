@@ -79,8 +79,8 @@
  * The function returns false if the values requires for the condition (node degrees
  * and variable values) have not yet been instantiated by rule matching. */
 
-void generateConditionVariables(Condition *condition, string f_prefix);
-void generateConditionEvaluator(Condition *condition, bool nested, string f_prefix);
+void generateConditionVariables(Condition *condition, string f_prefix, bool negate);
+void generateConditionEvaluator(Condition *condition, bool nested, string f_prefix, bool negate);
 void generatePredicateEvaluators(Rule *rule, Condition *condition, string f_prefix);
 
 #endif /* INC_GEN_CONDITION_H */

@@ -643,6 +643,22 @@ static Condition *transformCondition(Rule *rule, GPCondition *ast_condition,
            break;
       }
 
+      case PATH_PRED:
+      {
+           printf("Generating path predicate\n");
+           condition->type = 'e';
+           int source_index = findLeftIndexFromId(node_map, ast_condition->path_pred.source);
+           int target_index = findLeftIndexFromId(node_map, ast_condition->path_pred.target);
+           RuleNode *source = getRuleNode(rule->lhs, source_index);
+           RuleNode *target = getRuleNode(rule->lhs, target_index);
+           predicate = makePathPred(bool_count++, negated, source_index, target_index);
+           condition->predicate = predicate;
+           rule->path_pred = true;
+           addNodePredicate(source, predicate, rule->predicate_count);
+           addNodePredicate(target, predicate, rule->predicate_count);
+           break;
+      }
+
       case EQUAL:
       case NOT_EQUAL:
            condition->type = 'e';

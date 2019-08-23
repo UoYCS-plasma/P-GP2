@@ -89,7 +89,6 @@ List *addASTCommand(YYLTYPE location, GPCommand *command, List *next)
 
 List *addASTRule(YYLTYPE location, string rule_name, List *next)
 {
-    printf("Parsing new rule %s\n", rule_name);
     List *new_rule = makeGPList(location, RULES);
     new_rule->rule_call.rule_name = strdup(rule_name);
     new_rule->rule_call.rule = NULL;
@@ -100,7 +99,6 @@ List *addASTRule(YYLTYPE location, string rule_name, List *next)
 List *addASTVariableDecl(ListType type, YYLTYPE location, List *variables,
 	                 List *next)
 {
-    printf("  Parsing variable declarations\n");
     List *new_var_decl = makeGPList(location, type);
     new_var_decl->variables = variables;
     new_var_decl->next = next;
@@ -117,7 +115,6 @@ List *addASTVariable(YYLTYPE location, string variable_name, List *next)
 
 List *addASTNodeID(YYLTYPE location, string node_id, List *next)
 {
-    printf(" Parsing node ID %s\n", node_id);
     List *new_id = makeGPList(location, INTERFACE_LIST);
     new_id->node_id = strdup(node_id);
     new_id->next = next;
@@ -126,7 +123,6 @@ List *addASTNodeID(YYLTYPE location, string node_id, List *next)
 
 List *addASTNode(YYLTYPE location, GPNode *node, List *next)
 {
-    printf("  Parsing new node\n");
     List *new_node = makeGPList(location, NODE_LIST);
     new_node->node = node;
     new_node->next = next;
@@ -135,7 +131,6 @@ List *addASTNode(YYLTYPE location, GPNode *node, List *next)
 
 List *addASTEdge(YYLTYPE location, GPEdge *edge, List *next)
 {
-    printf("  Parsing new edge\n");
     List *new_edge = makeGPList(location, EDGE_LIST);
     new_edge->edge = edge;
     new_edge->next = next;
@@ -144,7 +139,6 @@ List *addASTEdge(YYLTYPE location, GPEdge *edge, List *next)
 
 List *addASTAtom(YYLTYPE location, GPAtom *atom, List *next)
 {
-    printf("  Parsing new Atom\n");
     List *new_atom = makeGPList(location, GP_LIST);
     new_atom->atom = atom;
     new_atom->next = next;
@@ -226,7 +220,6 @@ GPCommand *newASTWeightedRuleCall(YYLTYPE location, string rule_name)
 
 GPCommand *newASTRuleSetCall(YYLTYPE location, List *rule_set)
 {
-   printf("New rule set\n");
    GPCommand *command = makeGPCommand(location, RULE_SET_CALL);
    command->rule_set = rule_set;
    command->mode = 'd';
@@ -235,7 +228,6 @@ GPCommand *newASTRuleSetCall(YYLTYPE location, List *rule_set)
 
 GPCommand *newASTSeparateWeightedRuleSetCall(YYLTYPE location, List *rule_set)
 {
-   printf("New SW rule set\n");
    GPCommand *command = makeGPCommand(location, RULE_SET_CALL);
    command->rule_set = rule_set;
    command->mode = 's';
@@ -244,7 +236,6 @@ GPCommand *newASTSeparateWeightedRuleSetCall(YYLTYPE location, List *rule_set)
 
 GPCommand *newASTJoinedWeightedRuleSetCall(YYLTYPE location, List *rule_set)
 {
-   printf("New JW rule set\n");
    GPCommand *command = makeGPCommand(location, RULE_SET_CALL);
    command->rule_set = rule_set;
    command->mode = 'j';
@@ -338,6 +329,14 @@ GPCondition *newASTEdgePred(YYLTYPE location, string source, string target,
     return condition;
 }
 
+GPCondition *newASTPathPred(YYLTYPE location, string source, string target)
+{
+    GPCondition *condition = makeGPCondition(location, PATH_PRED);
+    condition->path_pred.source = strdup(source);
+    condition->path_pred.target = strdup(target);
+    return condition;
+}
+
 GPCondition *newASTListComparison(ConditionType type, YYLTYPE location,
 	                          List *left_list, List *right_list)
 {
@@ -387,7 +386,6 @@ GPAtom *makeGPAtom(YYLTYPE location, AtomType type)
 
 GPAtom *newASTVariable(YYLTYPE location, string name)
 {
-    printf("  Parsing new variable %s\n", name);
     GPAtom *atom = makeGPAtom(location, VARIABLE);
     atom->variable.name = strdup(name);
     atom->variable.type = LIST_VAR;
@@ -396,7 +394,6 @@ GPAtom *newASTVariable(YYLTYPE location, string name)
 
 GPAtom *newASTNumber(YYLTYPE location, int number)
 {
-    printf("  Parsing new number %d\n", number);
     GPAtom *atom = makeGPAtom(location, INTEGER_CONSTANT);
     atom->number = number;
     return atom;
@@ -411,7 +408,6 @@ GPAtom *newASTDnum(YYLTYPE location, double number)
 
 GPAtom *newASTString(YYLTYPE location, string string)
 {
-    printf("  Parsing new string %s\n", string);
     GPAtom *atom = makeGPAtom(location, STRING_CONSTANT);
     if(string) atom->string = strdup(string);
     else atom->string = NULL;
@@ -420,7 +416,6 @@ GPAtom *newASTString(YYLTYPE location, string string)
 
 GPAtom *newASTDegreeOp(AtomType type, YYLTYPE location, string node_id)
 {
-    printf("  Parsing new degree op on node %d\n", node_id);
     GPAtom *atom = makeGPAtom(location, type);
     atom->node_id = strdup(node_id);
     return atom;
@@ -456,7 +451,6 @@ GPAtom *newASTNegExp(YYLTYPE location, GPAtom *neg_exp)
 GPAtom *newASTBinaryOp(AtomType type, YYLTYPE location,
                        GPAtom *left_exp, GPAtom *right_exp)
 {
-    printf("  Parsing new binary operator\n");
     GPAtom *atom = makeGPAtom(location, INTEGER_CONSTANT);
     if(type == DIVIDE && right_exp->type == INTEGER_CONSTANT)
     {
@@ -508,7 +502,6 @@ GPAtom *newASTBinaryOp(AtomType type, YYLTYPE location,
 }
 
 GPAtom *newASTRandInt(YYLTYPE location, GPAtom *left_exp, GPAtom *right_exp){
-    printf("  Parsing rand int operator\n");
     GPAtom *atom = makeGPAtom(location, RAND_INT);
     atom->rand_op.left_exp = left_exp;
     atom->rand_op.right_exp = right_exp;
@@ -516,7 +509,6 @@ GPAtom *newASTRandInt(YYLTYPE location, GPAtom *left_exp, GPAtom *right_exp){
 }
 
 GPAtom *newASTBound(YYLTYPE location, GPAtom *first_exp, GPAtom *second_exp, GPAtom *third_exp){
-    printf("  Parsing bound operator\n");
     GPAtom *atom = makeGPAtom(location, BOUND);
     atom->bound_op.first_exp = first_exp;
     atom->bound_op.second_exp = second_exp;

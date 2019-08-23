@@ -601,3 +601,95 @@ void freeGraph(Graph *graph)
    }
    free(graph);
 }
+
+void path_DFS_util(int** path_map, Graph* graph, int i, int j);
+void path_DFS_util(int** path_map, Graph* graph, int i, int j){
+  Node *node_i = getNode(graph, i);
+  Node *node_j = getNode(graph, j);
+  if(node_i == NULL || node_j == NULL || node_i->index == -1 || node_j->index == -1) return;
+  path_map[i][j] = 1;
+  for(int e = 0; e < node_j->out_edges.size + 2; e++){
+    Edge *edge = getNthOutEdge(graph, node_j, e);
+    if(edge == NULL || edge->index == -1) continue;
+    int k = edge->target;
+    if (path_map[i][k] != 1){
+      path_DFS_util(path_map, graph, i, k);
+    }
+  }
+}
+
+void path_node_DFS(int** path_map, Graph* graph, int node_index){
+  if (path_map[node_index] == NULL){
+    path_map[node_index] = malloc(graph->nodes.size * sizeof(int));
+    for(int i = 0; i < graph->nodes.size; i++){
+      path_map[node_index][i] = 0;
+    }
+    path_DFS_util(path_map, graph, node_index, node_index);
+  }
+}
+
+int** makePathMap(Graph* graph){
+  int** path_map = malloc(graph->nodes.size * sizeof(int*));
+  int** adjacency_matrix = malloc(graph->nodes.size * sizeof(int*));
+  for(int i = 0; i < graph->nodes.size; i++){
+    path_map[i] = NULL;
+  }
+  return path_map;
+}
+void freePathMap(int** path_map, Graph* graph){
+  for(int i = 0; i < graph->nodes.size; i++){
+    if(path_map[i] != NULL){
+      free(path_map[i]);
+    }
+  }
+  free(path_map);
+}
+
+//Graph duplication function
+Graph* duplicate_graph(Graph *graph)
+{
+   Graph *graph_copy = newGraph(graph->nodes.size, graph->edges.size);
+	 int node_mapping[graph->nodes.size];
+	 //Copy nodes
+	 for(int i = 0; i < graph->nodes.size; i++){
+			Node *host_node = getNode(graph, i);
+			if(host_node == NULL || host_node->index == -1) continue;
+			node_mapping[i] = addNode(graph_copy, host_node->root, makeHostLabel(host_node->label.mark, host_node->label.length, copyHostList(host_node->label.list)));
+	 }
+	 //Copy edges
+	 for(int i = 0; i < graph->edges.size; i++){
+			Edge *host_edge = getEdge(graph, i);
+			if(host_edge == NULL || host_edge->index == -1) continue;
+			addEdge(graph_copy, makeHostLabel(host_edge->label.mark, host_edge->label.length, copyHostList(host_edge->label.list)), node_mapping[host_edge->source], node_mapping[host_edge->target]);
+	 }
+	 return graph_copy;
+}
+
+Graph* disjoint_union(Graph* A, Graph* B){
+  Graph *graph_copy = newGraph(A->nodes.size + B->nodes.size, A->edges.size + B->edges.size);
+  int node_mapping_A[A->nodes.size];
+  int node_mapping_B[B->nodes.size];
+  //Copy nodes
+  for(int i = 0; i < A->nodes.size; i++){
+     Node *host_node = getNode(A, i);
+     if(host_node == NULL || host_node->index == -1) continue;
+     node_mapping_A[i] = addNode(graph_copy, host_node->root, makeHostLabel(1, host_node->label.length, copyHostList(host_node->label.list)));
+  }
+  for(int i = 0; i < B->nodes.size; i++){
+     Node *host_node = getNode(B, i);
+     if(host_node == NULL || host_node->index == -1) continue;
+     node_mapping_B[i] = addNode(graph_copy, host_node->root, makeHostLabel(3, host_node->label.length, copyHostList(host_node->label.list)));
+  }
+  //Copy edges
+  for(int i = 0; i < A->edges.size; i++){
+     Edge *host_edge = getEdge(A, i);
+     if(host_edge == NULL || host_edge->index == -1) continue;
+     addEdge(graph_copy, makeHostLabel(1, host_edge->label.length, copyHostList(host_edge->label.list)), node_mapping_A[host_edge->source], node_mapping_A[host_edge->target]);
+  }
+  for(int i = 0; i < B->edges.size; i++){
+     Edge *host_edge = getEdge(B, i);
+     if(host_edge == NULL || host_edge->index == -1) continue;
+     addEdge(graph_copy, makeHostLabel(3, host_edge->label.length, copyHostList(host_edge->label.list)), node_mapping_B[host_edge->source], node_mapping_B[host_edge->target]);
+  }
+  return graph_copy;
+}
